@@ -1,7 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UserQueryDto } from './dto/user-query.dto';
+
+// @Query() вытаскивает данные после ? (например, ?page=1)
+// @Body() вытаскивает тело POST-запроса (req.body)
+// @Param() вытаскивает часть пути URL (например, :id из /users/123)
 
 @Controller('users')
 export class UsersController {
@@ -12,9 +16,11 @@ export class UsersController {
         return this.usersService.create(createUserDto);
     }
 
+    // @Query() — это указатель для NestJS, откуда брать данные во время работы программы
+    // То есть «Возьми req.query из HTTP-запроса и положи его в эту переменную»
     @Get()
-    findAll() {
-        return this.usersService.findAll();
+    findAll(@Query() query: UserQueryDto) {
+        return this.usersService.findAll(query);
     }
 
     @Delete(':id')
