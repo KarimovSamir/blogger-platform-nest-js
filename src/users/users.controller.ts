@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Param, Delete, Query } from '@nestjs/commo
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
+import { UsersQueryRepository } from './infrastructure/users.query-repository';
 
 // @Query() вытаскивает данные после ? (например, ?page=1)
 // @Body() вытаскивает тело POST-запроса (req.body)
@@ -9,11 +10,19 @@ import { UserQueryDto } from './dto/user-query.dto';
 
 @Controller('users')
 export class UsersController {
-    constructor(private readonly usersService: UsersService) { }
+    constructor(
+        private readonly usersService: UsersService,
+        // Внедряем Query-репозиторий для GET-запросов и формирования ответов
+        private readonly usersQueryRepository: UsersQueryRepository,
+    ) { }
 
     @Post()
-    create(@Body() createUserDto: CreateUserDto) {
-        return this.usersService.create(createUserDto);
+    async create(@Body() createUserDto: CreateUserDto) {
+        // 1. Сервис создает юзера в базе и возвращает только его строковый ID
+        const userId = await this.usersService.create(createUserDto);
+
+        // 2. Query-репозиторий находит этого юзера по ID и отдает в виде UserViewDto
+        return this.usersQueryRepository.getByIdOrNotFoundFail(userId);
     }
 
     // @Query() — это указатель для NestJS, откуда брать данные во время работы программы
