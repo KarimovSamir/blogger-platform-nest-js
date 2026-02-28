@@ -14,7 +14,7 @@ export class UsersService {
         private usersRepository: UsersRepository,
     ) { }
 
-    async createUser(createUserDto: CreateUserDto) {
+    async create(createUserDto: CreateUserDto) {
         const user = this.UserModel.createInstance(
             createUserDto.login,
             createUserDto.email,

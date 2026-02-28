@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, Delete, Query, HttpCode, HttpStatus
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
-import { UsersQueryRepository } from './infrastructure/users.query-repository';
+import { UsersQueryRepository } from './infrastructure/query/users.query-repository';
 
 // @Query() вытаскивает данные после ? (например, ?page=1)
 // @Body() вытаскивает тело POST-запроса (req.body)
@@ -17,9 +17,9 @@ export class UsersController {
     ) { }
 
     @Post()
-    async createUser(@Body() createUserDto: CreateUserDto) {
+    async create(@Body() createUserDto: CreateUserDto) {
         // 1. Сервис создает юзера в базе и возвращает только его строковый ID
-        const userId = await this.usersService.createUser(createUserDto);
+        const userId = await this.usersService.create(createUserDto);
 
         // 2. Query-репозиторий находит этого юзера по ID и отдает в виде UserViewDto
         return this.usersQueryRepository.getByIdOrNotFoundFail(userId);

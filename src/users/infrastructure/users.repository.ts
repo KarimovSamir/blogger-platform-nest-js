@@ -8,7 +8,8 @@ export class UsersRepository {
     // Внедряем нашу Mongoose-модель. Теперь репозиторий может ходить в базу.
     constructor(@InjectModel(User.name) private UserModel: UserModelType) { }
 
-    // Ищем пользователя, исключая "мягко удаленных" (deletedAt: null)
+    // Получаем объект или null
+    // Можно использовать если отсутствие юзера - не проблема
     async findById(id: string): Promise<UserDocument | null> {
         return this.UserModel.findOne({
             _id: id,
@@ -16,12 +17,8 @@ export class UsersRepository {
         });
     }
 
-    // Метод сохранения в Mongoose
-    async save(user: UserDocument) {
-        await user.save();
-    }
-
-    // Если юзер не найден, сразу выбрасывает 404 ошибку NestJS.
+    // Получаем объект или ошибку
+    // Можно не писать в логике проверки, если юзера нет, то сразу ошибка
     async findOrNotFoundFail(id: string): Promise<UserDocument> {
         const user = await this.findById(id);
         if (!user) {
@@ -29,4 +26,10 @@ export class UsersRepository {
         }
         return user;
     }
+
+    // Метод сохранения в Mongoose
+    async save(user: UserDocument) {
+        await user.save();
+    }
+
 }
