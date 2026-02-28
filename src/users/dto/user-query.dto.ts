@@ -1,11 +1,10 @@
-import { IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
-import { Type } from 'class-transformer';
-import { SortDirection } from '../../common/types/pagination';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { BaseQueryParams, SortDirection } from '../../core/dto/base.query-params.input-dto';
 
-export class UserQueryDto {
+// Наследуем (extends) pageNumber, pageSize, sortDirection и calculateSkip
+export class UserQueryDto extends BaseQueryParams {
     @IsOptional()
     @IsString()
-    // Явно указываем TypeScript что null тоже разрешен
     searchLoginTerm?: string | null = null;
 
     @IsOptional()
@@ -15,20 +14,9 @@ export class UserQueryDto {
     @IsOptional()
     @IsString()
     sortBy?: string = 'createdAt';
-
+    
+    // Переопределяем дефолтное значение для юзеров, если нужно
     @IsOptional()
-    @IsEnum(SortDirection) // Проверяет, что значение только 'asc' или 'desc'
-    sortDirection?: SortDirection = SortDirection.Desc;
-
-    @IsOptional()
-    @Type(() => Number) // Аналог .toInt()
-    @IsInt()
-    @Min(1)
-    pageNumber?: number = 1; // Дефолтное значение
-
-    @IsOptional()
-    @Type(() => Number)
-    @IsInt()
-    @Min(1)
-    pageSize?: number = 10;
+    @IsEnum(SortDirection)
+    sortDirection: SortDirection = SortDirection.Desc;
 }
