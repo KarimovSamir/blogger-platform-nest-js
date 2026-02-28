@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Query, HttpCode, HttpStatus } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
@@ -17,9 +17,9 @@ export class UsersController {
     ) { }
 
     @Post()
-    async create(@Body() createUserDto: CreateUserDto) {
+    async createUser(@Body() createUserDto: CreateUserDto) {
         // 1. Сервис создает юзера в базе и возвращает только его строковый ID
-        const userId = await this.usersService.create(createUserDto);
+        const userId = await this.usersService.createUser(createUserDto);
 
         // 2. Query-репозиторий находит этого юзера по ID и отдает в виде UserViewDto
         return this.usersQueryRepository.getByIdOrNotFoundFail(userId);
@@ -33,7 +33,8 @@ export class UsersController {
     }
 
     @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.usersService.remove(id);
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async remove(@Param('id') id: string) {
+        await this.usersService.deleteUser(id)
     }
 }

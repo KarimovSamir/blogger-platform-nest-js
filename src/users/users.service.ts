@@ -14,7 +14,7 @@ export class UsersService {
         private usersRepository: UsersRepository,
     ) { }
 
-    async create(createUserDto: CreateUserDto) {
+    async createUser(createUserDto: CreateUserDto) {
         const user = this.UserModel.createInstance(
             createUserDto.login,
             createUserDto.email,
@@ -22,6 +22,12 @@ export class UsersService {
         );
         await this.usersRepository.save(user);
         return user._id.toString();
+    }
+
+    async deleteUser(id: string) {
+        const user = await this.usersRepository.findOrNotFoundFail(id);
+        user.makeDeleted()
+        await this.usersRepository.save(user);
     }
 
     findAll(userQueryDto: UserQueryDto) {
