@@ -29,7 +29,7 @@ export class UsersController {
     // То есть «Возьми req.query из HTTP-запроса и положи его в эту переменную»
     @Get()
     findAll(@Query() query: UserQueryDto) {
-        return this.usersService.findAll(query);
+        return this.usersQueryRepository.getAll(query);
     }
 
     @Delete(':id')
