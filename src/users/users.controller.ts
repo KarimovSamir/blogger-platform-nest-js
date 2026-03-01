@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Param, Delete, Query, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Query, HttpCode, HttpStatus, Put } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
 import { UsersQueryRepository } from './infrastructure/query/users.query-repository';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 // @Query() вытаскивает данные после ? (например, ?page=1)
 // @Body() вытаскивает тело POST-запроса (req.body)
@@ -25,10 +26,19 @@ export class UsersController {
         return this.usersQueryRepository.getByIdOrNotFoundFail(userId);
     }
 
+    @Put(':id')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async updateUser(
+        @Param('id') id: string,
+        @Body() updateUserDto: UpdateUserDto,
+    ) {
+        await this.usersService.updateUser(id, updateUserDto);
+    }
+
     // @Query() — это указатель для NestJS, откуда брать данные во время работы программы
     // То есть «Возьми req.query из HTTP-запроса и положи его в эту переменную»
     @Get()
-    findAll(@Query() query: UserQueryDto) {
+    async findAll(@Query() query: UserQueryDto) {
         return this.usersQueryRepository.getAll(query);
     }
 

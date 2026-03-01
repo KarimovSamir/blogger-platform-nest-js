@@ -18,6 +18,9 @@ export class User {
     @Prop({ type: Date, nullable: true, default: null })
     deletedAt: Date | null;
 
+    @Prop({ type: Boolean, required: true, default: false })
+    isEmailConfirmed: boolean;
+
     // TypeScript должен знать что такие поля существуют, хоть мы и указали timestamps
     createdAt: Date;
     updatedAt: Date;
@@ -30,6 +33,13 @@ export class User {
         user.email = email;
         user.passwordHash = passwordHash;
         return user as UserDocument;
+    }
+
+    update(dto: { email: string }) {
+        if (dto.email !== this.email) {
+            this.isEmailConfirmed = false; // По логике курса, при смене почты она снова не подтверждена
+            this.email = dto.email;
+        }
     }
 
     // Метод для мягкого удаления

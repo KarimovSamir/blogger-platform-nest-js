@@ -26,14 +26,17 @@ export class UsersService {
         return user._id.toString();
     }
 
+    async updateUser(id: string, dto: { email: string }): Promise<string> {
+        const user = await this.usersRepository.findOrNotFoundFail(id);
+        user.update(dto);
+        await this.usersRepository.save(user);
+        return user._id.toString();
+    }
+
     async deleteUser(id: string) {
         const user = await this.usersRepository.findOrNotFoundFail(id);
         user.makeDeleted()
         await this.usersRepository.save(user);
-    }
-
-    async findAll(userQueryDto: UserQueryDto) {
-        return await this.usersQueryRepository.getAll(userQueryDto)
     }
 
     findOne(id: number) {
