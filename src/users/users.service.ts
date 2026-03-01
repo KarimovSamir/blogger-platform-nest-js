@@ -6,12 +6,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User } from './domain/user.entity';
 import type { UserModelType } from './domain/user.entity';
 import { UsersRepository } from './infrastructure/users.repository';
+import { UsersQueryRepository } from './infrastructure/query/users.query-repository';
 
 @Injectable()
 export class UsersService {
     constructor(
         @InjectModel(User.name) private UserModel: UserModelType,
         private usersRepository: UsersRepository,
+        private usersQueryRepository: UsersQueryRepository,
     ) { }
 
     async create(createUserDto: CreateUserDto) {
@@ -30,14 +32,8 @@ export class UsersService {
         await this.usersRepository.save(user);
     }
 
-    findAll(userQueryDto: UserQueryDto) {
-        return {
-            pagesCount: 1,
-            page: userQueryDto.pageNumber,
-            pageSize: userQueryDto.pageSize,
-            totalCount: 0,
-            items: []
-        };
+    async findAll(userQueryDto: UserQueryDto) {
+        return await this.usersQueryRepository.getAll(userQueryDto)
     }
 
     findOne(id: number) {
