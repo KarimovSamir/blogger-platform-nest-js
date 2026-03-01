@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../domain/user.entity';
-import type { UserDocument, UserModelType } from '../domain/user.entity'; // Явно указываем 'import type'
+import type { UserDocument, UserModelType } from '../domain/user.entity';
 
 @Injectable() // Делает этот класс доступным для внедрения зависимостей (DI)
 export class UsersRepository {
