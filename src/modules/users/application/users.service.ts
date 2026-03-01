@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UserQueryDto } from './dto/user-query.dto';
+import { CreateUserDto } from '../dto/create-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { User } from './domain/user.entity';
-import type { UserModelType } from './domain/user.entity';
-import { UsersRepository } from './infrastructure/users.repository';
-import { UsersQueryRepository } from './infrastructure/query/users.query-repository';
+import { User } from '../domain/user.entity';
+import type { UserModelType } from '../domain/user.entity';
+import { UsersRepository } from '../infrastructure/users.repository';
+import { UsersQueryRepository } from '../infrastructure/query/users.query-repository';
+import { UpdateUserDto } from '../api/input-dto/update-user.input-dto';
 
 @Injectable()
 export class UsersService {

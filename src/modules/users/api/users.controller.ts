@@ -1,9 +1,10 @@
 import { Controller, Get, Post, Body, Param, Delete, Query, HttpCode, HttpStatus, Put } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UserQueryDto } from './dto/user-query.dto';
-import { UsersQueryRepository } from './infrastructure/query/users.query-repository';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UsersService } from '../application/users.service';
+import { UsersQueryRepository } from '../infrastructure/query/users.query-repository';
+import { CreateUserDto } from '../dto/create-user.dto';
+import { UpdateUserDto } from './input-dto/update-user.input-dto';
+import { UserQueryDto } from './input-dto/get-users-query-params.input-dto';
+
 
 // @Query() вытаскивает данные после ? (например, ?page=1)
 // @Body() вытаскивает тело POST-запроса (req.body)

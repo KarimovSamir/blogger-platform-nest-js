@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../../domain/user.entity';
 import type { UserModelType } from '../../domain/user.entity';
 import { UserViewDto } from '../../api/view-dto/user.view-dto';
-import { UserQueryDto } from '../../dto/user-query.dto';
-import { PaginatedViewDto } from '../../../core/dto/base.paginated.view-dto';
+import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
+import { UserQueryDto } from '../../api/input-dto/get-users-query-params.input-dto';
 
 
 @Injectable() // Делаем класс доступным для внедрения в контроллер
