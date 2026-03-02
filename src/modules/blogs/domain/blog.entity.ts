@@ -42,8 +42,8 @@ export class Blog {
     }
 }
 
-export const BlogShema = SchemaFactory.createForClass(Blog);
-BlogShema.loadClass(Blog);
+export const BlogSсhema = SchemaFactory.createForClass(Blog);
+BlogSсhema.loadClass(Blog);
 
 export type BlogDocument = HydratedDocument<Blog>
 export type BlogModelType = Model<BlogDocument> & typeof Blog

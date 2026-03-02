@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { UsersModule } from './modules/users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { BlogsModule } from './modules/blogs/blogs.module';
 
 @Module({
     imports: [
@@ -12,7 +13,8 @@ import { MongooseModule } from '@nestjs/mongoose';
         // Когда сервер запускается, он выполняет MongooseModule.forRoot()
         // NestJS сам установит и будет удерживать соединение
         MongooseModule.forRoot(process.env.MONGO_URL || ""),
-        UsersModule
+        UsersModule,
+        BlogsModule
     ],
     controllers: [AppController],
     providers: [AppService],
