@@ -17,6 +17,6 @@ export class CreateBlogDto {
     @IsNotEmpty()
     @MinLength(2)
     @MaxLength(100)
-    @IsUrl()
+    // @IsUrl()
     websiteUrl: string;
 }

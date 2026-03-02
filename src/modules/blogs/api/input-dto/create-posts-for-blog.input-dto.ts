@@ -17,6 +17,6 @@ export class CreatePostForBlogDto {
     @IsNotEmpty()
     @MinLength(2)
     @MaxLength(1000)
-    @IsUrl()
+    // @IsUrl()
     content: string;
 }
