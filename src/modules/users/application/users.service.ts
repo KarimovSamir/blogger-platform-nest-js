@@ -4,19 +4,17 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../domain/user.entity';
 import type { UserModelType } from '../domain/user.entity';
 import { UsersRepository } from '../infrastructure/users.repository';
-import { UsersQueryRepository } from '../infrastructure/query/users.query-repository';
 import { UpdateUserDto } from '../api/input-dto/update-user.input-dto';
 
 @Injectable()
 export class UsersService {
     constructor(
-        @InjectModel(User.name) private UserModel: UserModelType,
+        @InjectModel(User.name) private userModel: UserModelType,
         private usersRepository: UsersRepository,
-        private usersQueryRepository: UsersQueryRepository,
     ) { }
 
     async create(createUserDto: CreateUserDto) {
-        const user = this.UserModel.createInstance(
+        const user = this.userModel.createInstance(
             createUserDto.login,
             createUserDto.email,
             createUserDto.password,
