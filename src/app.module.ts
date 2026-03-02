@@ -7,6 +7,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { BlogsModule } from './modules/blogs/blogs.module';
 import { PostsModule } from './modules/posts/posts.module';
 import { TestingModule } from './modules/testing/testing.module';
+import { CommentsModule } from './modules/comments/comments.module';
 
 @Module({
     imports: [
@@ -18,6 +19,7 @@ import { TestingModule } from './modules/testing/testing.module';
         UsersModule,
         BlogsModule,
         PostsModule,
+        CommentsModule,
         TestingModule
     ],
     controllers: [AppController],
