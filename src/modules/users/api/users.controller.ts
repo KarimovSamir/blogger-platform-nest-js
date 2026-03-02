@@ -5,7 +5,6 @@ import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from './input-dto/update-user.input-dto';
 import { UserQueryDto } from './input-dto/get-users-query-params.input-dto';
 
-
 // @Query() вытаскивает данные после ? (например, ?page=1)
 // @Body() вытаскивает тело POST-запроса (req.body)
 // @Param() вытаскивает часть пути URL (например, :id из /users/123)
@@ -18,12 +17,18 @@ export class UsersController {
         private readonly usersQueryRepository: UsersQueryRepository,
     ) { }
 
+    // @Query() — это указатель для NestJS, откуда брать данные во время работы программы
+    // То есть «Возьми req.query из HTTP-запроса и положи его в эту переменную»
+    @Get()
+    async findAll(@Query() query: UserQueryDto) {
+        return this.usersQueryRepository.getAll(query);
+    }
+
     @Post()
     async create(@Body() createUserDto: CreateUserDto) {
-        // 1. Сервис создает юзера в базе и возвращает только его строковый ID
+        // Создаём сущность через сервис и получаем айди
         const userId = await this.usersService.create(createUserDto);
-
-        // 2. Query-репозиторий находит этого юзера по ID и отдает в виде UserViewDto
+        // А затем берём готовый ViewDto через репозиторий
         return this.usersQueryRepository.getByIdOrNotFoundFail(userId);
     }
 
@@ -34,13 +39,6 @@ export class UsersController {
         @Body() updateUserDto: UpdateUserDto,
     ) {
         await this.usersService.updateUser(id, updateUserDto);
-    }
-
-    // @Query() — это указатель для NestJS, откуда брать данные во время работы программы
-    // То есть «Возьми req.query из HTTP-запроса и положи его в эту переменную»
-    @Get()
-    async findAll(@Query() query: UserQueryDto) {
-        return this.usersQueryRepository.getAll(query);
     }
 
     @Delete(':id')
