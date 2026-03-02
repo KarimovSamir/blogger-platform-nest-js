@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BlogsModule } from './modules/blogs/blogs.module';
 import { PostsModule } from './modules/posts/posts.module';
+import { TestingModule } from './modules/testing/testing.module';
 
 @Module({
     imports: [
@@ -16,7 +17,8 @@ import { PostsModule } from './modules/posts/posts.module';
         MongooseModule.forRoot(process.env.MONGO_URL || ""),
         UsersModule,
         BlogsModule,
-        PostsModule
+        PostsModule,
+        TestingModule
     ],
     controllers: [AppController],
     providers: [AppService],

@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Blog, BlogSсhema } from "./domain/blog.entity";
 import { BlogsController } from "./api/blogs.controller";
@@ -13,7 +13,7 @@ import { PostsModule } from "../posts/posts.module";
         // Динамически создаем мини-модуль, который регистрирует нашу схему в базе
         MongooseModule.forFeature([{name: Blog.name, schema: BlogSсhema}]),
         // Из этого модуля можно экспортировать то, что указано в 
-        PostsModule
+        forwardRef(() => PostsModule)
     ],
     // Кто принимает HTTP-запросы
     controllers: [BlogsController],
