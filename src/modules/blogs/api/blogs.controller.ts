@@ -4,6 +4,13 @@ import { BlogsQueryRepository } from "../infrastructure/query/blogs.query-reposi
 import { BlogQueryDto } from "./input-dto/get-blogs-query-params.input-dto";
 import { CreateBlogDto } from "./input-dto/create-blog.input-dto";
 import { UpdateBlogDto } from "./input-dto/update-blog.input-dto";
+import { BlogViewDto } from "./view-dto/blog.view-dto";
+import { PaginatedViewDto } from "../../../core/dto/base.paginated.view-dto";
+import { PostsQueryRepository } from "../../posts/infrastructure/query/posts.query-repository";
+import { PostsService } from "../../posts/application/posts.service";
+import { PostQueryDto } from "../../posts/api/input-dto/get-posts-query-params.input-dto";
+import { CreatePostForBlogDto } from "./input-dto/create-posts-for-blog.input-dto";
+
 
 // @Query() вытаскивает данные после ? (например, ?page=1)
 // @Body() вытаскивает тело POST-запроса (req.body)
@@ -15,30 +22,38 @@ export class BlogsController {
         private readonly blogsService: BlogsService,
         // Внедряем Query-репозиторий для GET-запросов и формирования ответов
         private readonly blogsQueryRepository: BlogsQueryRepository,
+        private readonly postsService: PostsService,
+        private readonly postsQueryRepository: PostsQueryRepository,
     ) { }
 
     // @Query() — это указатель для NestJS, откуда брать данные во время работы программы
     // То есть «Возьми req.query из HTTP-запроса и положи его в эту переменную»
     @Get()
-    async findAll(@Query() query: BlogQueryDto) {
+    async findAll(@Query() query: BlogQueryDto): Promise<PaginatedViewDto<BlogViewDto[]>> {
         return this.blogsQueryRepository.getAll(query);
     }
 
     @Get(':id')
-    async findById(@Param('id') id: string,) {
+    async findById(@Param('id') id: string) {
         return this.blogsQueryRepository.getByIdOrNotFoundFail(id);
     }
 
     @Get(':blogId/posts')
-    async getPostsForBlog(@Param('blogId') blogId: string, @Query() query: any) {
-        // Заглушка. Позже здесь будет вызов postsQueryRepository
-        return 'Here will be posts for blog';
+    async getPostsForBlog(
+        @Param('blogId') blogId: string, 
+        @Query() query: PostQueryDto
+    ) {
+        await this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
+        return this.postsQueryRepository.getAllByBlogId(blogId, query);
     }
 
     @Post(':blogId/posts')
-    async createPostForBlog(@Param('blogId') blogId: string, @Body() createPostDto: any) {
-        // Заглушка. Позже здесь будет вызов postsService
-        return 'Here will be created post';
+    async createPostForBlog(
+        @Param('blogId') blogId: string, 
+        @Body() createPostDto: CreatePostForBlogDto
+    ) {
+        const createdPostId = await this.postsService.createForBlog(blogId, createPostDto);
+        return this.postsQueryRepository.getByIdOrNotFoundFail(createdPostId);
     }
 
     @Post()

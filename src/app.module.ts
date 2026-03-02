@@ -5,6 +5,7 @@ import { UsersModule } from './modules/users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BlogsModule } from './modules/blogs/blogs.module';
+import { PostsModule } from './modules/posts/posts.module';
 
 @Module({
     imports: [
@@ -14,7 +15,8 @@ import { BlogsModule } from './modules/blogs/blogs.module';
         // NestJS сам установит и будет удерживать соединение
         MongooseModule.forRoot(process.env.MONGO_URL || ""),
         UsersModule,
-        BlogsModule
+        BlogsModule,
+        PostsModule
     ],
     controllers: [AppController],
     providers: [AppService],

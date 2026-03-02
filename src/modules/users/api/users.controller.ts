@@ -4,6 +4,8 @@ import { UsersQueryRepository } from '../infrastructure/query/users.query-reposi
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from './input-dto/update-user.input-dto';
 import { UserQueryDto } from './input-dto/get-users-query-params.input-dto';
+import { UserViewDto } from './view-dto/user.view-dto';
+import { PaginatedViewDto } from "../../../core/dto/base.paginated.view-dto";
 
 // @Query() вытаскивает данные после ? (например, ?page=1)
 // @Body() вытаскивает тело POST-запроса (req.body)
@@ -20,7 +22,7 @@ export class UsersController {
     // @Query() — это указатель для NestJS, откуда брать данные во время работы программы
     // То есть «Возьми req.query из HTTP-запроса и положи его в эту переменную»
     @Get()
-    async findAll(@Query() query: UserQueryDto) {
+    async findAll(@Query() query: UserQueryDto): Promise<PaginatedViewDto<UserViewDto[]>>  {
         return this.usersQueryRepository.getAll(query);
     }
 
