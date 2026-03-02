@@ -6,12 +6,15 @@ import { UpdatePostInputDto } from "./input-dto/update-post.input-dto";
 import { PostQueryDto } from "./input-dto/get-posts-query-params.input-dto";
 import { PostViewDto } from "./view-dto/post.view-dto";
 import { PaginatedViewDto } from "../../../core/dto/base.paginated.view-dto";
+import { CommentsQueryRepository } from "../../comments/infrastructure/query/comments.query-repository";
+import { CommentQueryDto } from "../../comments/api/input-dto/get-comments-query-params.input-dto";
 
 @Controller('posts')
 export class PostsController {
     constructor(
         private postsService: PostsService,
         private postsQueryRepository: PostsQueryRepository,
+        private readonly commentsQueryRepository: CommentsQueryRepository,
     ) {}
 
     @Get()
@@ -22,6 +25,15 @@ export class PostsController {
     @Get(':id')
     async getById(@Param('id') id: string): Promise<PostViewDto> {
         return this.postsQueryRepository.getByIdOrNotFoundFail(id);
+    }
+
+    @Get(':postId/comments')
+    async getCommentsForPost(
+        @Param('postId') postId: string,
+        @Query() query: CommentQueryDto
+    ) {
+        await this.postsQueryRepository.getByIdOrNotFoundFail(postId);
+        return this.commentsQueryRepository.getAllByPostId(postId, query);
     }
 
     @Post()

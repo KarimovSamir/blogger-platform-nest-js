@@ -6,11 +6,13 @@ import { PostsService } from "./application/posts.service";
 import { PostsRepository } from "./infrastructure/posts.repository";
 import { PostsQueryRepository } from "./infrastructure/query/posts.query-repository";
 import { BlogsModule } from "../blogs/blogs.module";
+import { CommentsModule } from "../comments/comments.module";
 
 @Module({
     imports: [
         MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
         forwardRef(() => BlogsModule),
+        forwardRef(() => CommentsModule),
     ],
     controllers: [PostsController],
     providers: [
