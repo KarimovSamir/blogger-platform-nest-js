@@ -10,12 +10,12 @@ import { UserQueryDto } from '../../api/input-dto/get-users-query-params.input-d
 @Injectable() // Делаем класс доступным для внедрения в контроллер
 export class UsersQueryRepository {
     constructor(
-        @InjectModel(User.name) private UserModel: UserModelType,
+        @InjectModel(User.name) private userModel: UserModelType,
     ) { }
 
     // Метод ищет юзера и сразу возвращает отформатированный ViewDto
     async getByIdOrNotFoundFail(id: string): Promise<UserViewDto> {
-        const user = await this.UserModel.findOne({
+        const user = await this.userModel.findOne({
             _id: id,
             deletedAt: null, // Игнорируем удаленных
         });
@@ -49,12 +49,12 @@ export class UsersQueryRepository {
             });
         }
 
-        const users = await this.UserModel.find(filter)
+        const users = await this.userModel.find(filter)
             .sort({ [query.sortBy as string]: query.sortDirection })
             .skip(query.calculateSkip())
             .limit(query.pageSize);
 
-        const totalCount = await this.UserModel.countDocuments(filter);
+        const totalCount = await this.userModel.countDocuments(filter);
 
         const items = users.map(UserViewDto.mapToView);
 

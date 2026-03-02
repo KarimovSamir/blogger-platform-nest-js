@@ -6,12 +6,12 @@ import type { UserDocument, UserModelType } from '../domain/user.entity';
 @Injectable() // Делает этот класс доступным для внедрения зависимостей (DI)
 export class UsersRepository {
     // Внедряем нашу Mongoose-модель. Теперь репозиторий может ходить в базу.
-    constructor(@InjectModel(User.name) private UserModel: UserModelType) { }
+    constructor(@InjectModel(User.name) private userModel: UserModelType) { }
 
     // Получаем объект или null
     // Можно использовать если отсутствие юзера - не проблема
     async findById(id: string): Promise<UserDocument | null> {
-        return this.UserModel.findOne({
+        return this.userModel.findOne({
             _id: id,
             deletedAt: null,
         });
