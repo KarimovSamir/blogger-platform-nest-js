@@ -5,19 +5,25 @@ import { User } from '../domain/user.entity';
 import type { UserModelType } from '../domain/user.entity';
 import { UsersRepository } from '../infrastructure/users.repository';
 import { UpdateUserDto } from '../api/input-dto/update-user.input-dto';
+import { BcryptService } from '../../../core/adapters/bcrypt.service';
 
 @Injectable()
 export class UsersService {
     constructor(
         @InjectModel(User.name) private userModel: UserModelType,
         private usersRepository: UsersRepository,
+        private bcryptService: BcryptService
     ) { }
 
-    async create(createUserDto: CreateUserDto) {
+    async create(dto: CreateUserDto) {
+        const passwordHash = await this.bcryptService.generateHash(
+            dto.password,
+        );
+
         const user = this.userModel.createInstance({
-            login: createUserDto.login,
-            email: createUserDto.email,
-            passwordHash: createUserDto.password,
+            login: dto.login,
+            email: dto.email,
+            passwordHash: passwordHash,
         });
         await this.usersRepository.save(user);
         return user._id.toString();
@@ -34,17 +40,5 @@ export class UsersService {
         const user = await this.usersRepository.findOrNotFoundFail(id);
         user.makeDeleted()
         await this.usersRepository.save(user);
-    }
-
-    findOne(id: number) {
-        return `This action returns a #${id} user`;
-    }
-
-    update(id: number, updateUserDto: UpdateUserDto) {
-        return `This action updates a #${id} user`;
-    }
-
-    remove(id: string) {
-        return `This action removes a #${id} user`;
     }
 }

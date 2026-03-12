@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { Resend } from "resend";
 import { SETTINGS } from "../settings/settings";
+import { Resend } from "resend";
 
 export type SendEmailParams = {
     to: string;

@@ -57,7 +57,20 @@ export class User {
         user.login = dto.login;
         user.email = dto.email;
         user.passwordHash = dto.passwordHash;
-        user.emailConfirmation = dto.emailConfirmation;
+        user.isEmailConfirmed = false;
+
+        // Инициализируем пустые объекты, чтобы методы сущности не падали
+        user.emailConfirmation = {
+            confirmationCode: dto.confirmationCode,
+            expirationDate: dto.expirationDate,
+            isConfirmed: false,
+        };
+
+        user.passwordRecovery = {
+            recoveryCode: null,
+            expirationDate: null,
+        };
+
         return user as UserDocument;
     }
 
@@ -76,8 +89,19 @@ export class User {
         this.deletedAt = new Date();
     }
 
-    setConfirmationCode(code: string) {
-        //logic
+    setConfirmationCode(confirmationCode: string, expirationDate: Date) {
+        this.emailConfirmation.confirmationCode = confirmationCode;
+        this.emailConfirmation.expirationDate = expirationDate;
+        this.emailConfirmation.isConfirmed = false;
+    }
+
+    setPasswordRecovery(recoveryCode: string, expirationDate: Date) {
+        this.passwordRecovery.recoveryCode = recoveryCode;
+        this.passwordRecovery.expirationDate = expirationDate;
+    }
+
+    confirmEmail() {
+        this.emailConfirmation.isConfirmed = true;
     }
 }
 

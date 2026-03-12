@@ -27,6 +27,13 @@ export class UsersRepository {
         return user;
     }
 
+    async findByLoginOrEmail(login: string, email: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({
+        $or: [{ login }, { email }],
+        deletedAt: null,
+    });
+}
+
     // Метод сохранения в Mongoose
     async save(user: UserDocument) {
         await user.save();

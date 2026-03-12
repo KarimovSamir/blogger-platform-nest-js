@@ -1,15 +1,18 @@
 import * as jwt from "jsonwebtoken";
 import { Injectable } from "@nestjs/common";
-import { SETTINGS } from "../settings/settings";
+import { ConfigService } from "@nestjs/config";
 import { AccessPayload, RefreshPayload } from "../domain/jwt-payloads";
 
 @Injectable()
 export class JwtService {
+    constructor(private configService: ConfigService) {}
+
     async createAccessToken(userId: string): Promise<string> {
-        const payload: AccessPayload = { userId };
-        return jwt.sign(payload, SETTINGS.AC_SECRET, {
-            expiresIn: SETTINGS.AC_TIME,
-        });
+        const payload = { userId };
+        const secret = this.configService.get<string>('AC_SECRET');
+        const time = this.configService.get<string>('AC_TIME');
+
+        return jwt.sign(payload, secret, { expiresIn: time });
     }
 
     async createRefreshToken(
