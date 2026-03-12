@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
+import { CreateUserDomainDto } from './dto/create-user.domain.dto';
 
 // Декоратор Schema говорит: "Этот класс — не просто объект, это описание коллекции для MongoDB"
 // timestamps нужен, чтобы автоматически подставить текущее время в createdAt и updatedAt
@@ -21,17 +22,42 @@ export class User {
     @Prop({ type: Boolean, required: true, default: false })
     isEmailConfirmed: boolean;
 
+    @Prop({
+        type: {
+            confirmationCode: String,
+            expirationDate: Date,
+            isConfirmed: Boolean,
+        }
+    })
+    emailConfirmation: {
+        confirmationCode: string;
+        expirationDate: Date;
+        isConfirmed: boolean;
+    }
+
+    @Prop({
+        type: {
+            recoveryCode: String,
+            expirationDate: Date,
+        }
+    })
+    passwordRecovery: {
+        recoveryCode: string;
+        expirationDate: Date;
+    }
+
     // TypeScript должен знать что такие поля существуют, хоть мы и указали timestamps
     createdAt: Date;
     updatedAt: Date;
 
     // Паттерн Фабрика (инкапсуляция логики создания)
     // Static потому что для вызова нам не нужен объект User.createInstance()
-    static createInstance(login: string, email: string, passwordHash: string): UserDocument {
+    static createInstance(dto: CreateUserDomainDto): UserDocument {
         const user = new this();
-        user.login = login;
-        user.email = email;
-        user.passwordHash = passwordHash;
+        user.login = dto.login;
+        user.email = dto.email;
+        user.passwordHash = dto.passwordHash;
+        user.emailConfirmation = dto.emailConfirmation;
         return user as UserDocument;
     }
 
@@ -48,6 +74,10 @@ export class User {
             throw new Error('Entity already deleted');
         }
         this.deletedAt = new Date();
+    }
+
+    setConfirmationCode(code: string) {
+        //logic
     }
 }
 

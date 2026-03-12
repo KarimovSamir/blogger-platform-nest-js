@@ -14,11 +14,11 @@ export class UsersService {
     ) { }
 
     async create(createUserDto: CreateUserDto) {
-        const user = this.userModel.createInstance(
-            createUserDto.login,
-            createUserDto.email,
-            createUserDto.password,
-        );
+        const user = this.userModel.createInstance({
+            login: createUserDto.login,
+            email: createUserDto.email,
+            passwordHash: createUserDto.password,
+        });
         await this.usersRepository.save(user);
         return user._id.toString();
     }
