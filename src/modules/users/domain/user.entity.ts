@@ -24,26 +24,26 @@ export class User {
 
     @Prop({
         type: {
-            confirmationCode: String,
-            expirationDate: Date,
+            confirmationCode: { type: String, nullable: true },
+            expirationDate: { type: Date, nullable: true },
             isConfirmed: Boolean,
         }
     })
     emailConfirmation: {
-        confirmationCode: string;
-        expirationDate: Date;
+        confirmationCode: string | null;
+        expirationDate: Date | null;
         isConfirmed: boolean;
     }
 
     @Prop({
         type: {
-            recoveryCode: String,
-            expirationDate: Date,
+            recoveryCode: { type: String, nullable: true },
+            expirationDate: { type: Date, nullable: true },
         }
     })
     passwordRecovery: {
-        recoveryCode: string;
-        expirationDate: Date;
+        recoveryCode: string | null;
+        expirationDate: Date | null;
     }
 
     // TypeScript должен знать что такие поля существуют, хоть мы и указали timestamps
@@ -59,11 +59,14 @@ export class User {
         user.passwordHash = dto.passwordHash;
         user.isEmailConfirmed = false;
 
-        // Инициализируем пустые объекты, чтобы методы сущности не падали
+        // Если флаг передали - используем его, иначе false
+        user.isEmailConfirmed = dto.isEmailConfirmed ?? false;
+
         user.emailConfirmation = {
-            confirmationCode: dto.confirmationCode,
-            expirationDate: dto.expirationDate,
-            isConfirmed: false,
+            // Если кода нет, ставим null
+            confirmationCode: dto.confirmationCode ?? null, 
+            expirationDate: dto.expirationDate ?? null,
+            isConfirmed: user.isEmailConfirmed,
         };
 
         user.passwordRecovery = {

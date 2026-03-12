@@ -28,11 +28,18 @@ export class UsersRepository {
     }
 
     async findByLoginOrEmail(login: string, email: string): Promise<UserDocument | null> {
-    return this.userModel.findOne({
-        $or: [{ login }, { email }],
-        deletedAt: null,
-    });
-}
+        return this.userModel.findOne({
+            $or: [{ login }, { email }],
+            deletedAt: null,
+        });
+    }
+
+    async findByConfirmationCode(confirmationCode: string): Promise<UserDocument | null>  {
+        return this.userModel.findOne({
+            'emailConfirmation.confirmationCode': confirmationCode,
+            deletedAt: null,
+        });
+    }
 
     // Метод сохранения в Mongoose
     async save(user: UserDocument) {

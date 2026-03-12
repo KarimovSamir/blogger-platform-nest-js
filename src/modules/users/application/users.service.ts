@@ -24,6 +24,7 @@ export class UsersService {
             login: dto.login,
             email: dto.email,
             passwordHash: passwordHash,
+            isEmailConfirmed: true
         });
         await this.usersRepository.save(user);
         return user._id.toString();
