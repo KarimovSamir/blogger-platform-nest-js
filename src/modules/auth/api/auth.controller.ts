@@ -1,28 +1,28 @@
 import { Controller, Post, Body, Get, HttpCode, HttpStatus } from '@nestjs/common';
-// import { AuthService } from '../application/auth.service';
 import { RegistrationAuthDto } from './input-dto/registration.input-dto';
 import { LoginAuthDto } from './input-dto/login.input-dto';
 import { RegistrationConfirmationAuthDto } from './input-dto/registration-confirmation.input-dto';
 import { RegistrationEmailResendingAuthDto } from './input-dto/registration-email-resending.input-dto';
 import { PasswordRecoveryAuthDto } from './input-dto/password-recovery.input-dto';
 import { NewEmailPasswordRecoveryAttributes } from './input-dto/new-password.input-dto';
+import { AuthService } from '../application/auth.service';
 
 @Controller('auth')
 export class AuthController {
     constructor(
-        // private readonly authService: AuthService
+        private readonly authService: AuthService,
     ) {}
 
     @Post('registration')
     @HttpCode(HttpStatus.NO_CONTENT)
     async registration(@Body() dto: RegistrationAuthDto) {
-        // вызов authService
+        await this.authService.registerMail(dto);
     }
 
     @Post('registration-confirmation')
     @HttpCode(HttpStatus.NO_CONTENT)
     async registrationConfirmation(@Body() dto: RegistrationConfirmationAuthDto) {
-        // вызов authService
+        await this.authService.confirmEmailByCode(dto.code)
     }
 
     @Post('registration-email-resending')
