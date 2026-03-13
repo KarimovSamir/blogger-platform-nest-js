@@ -22,13 +22,13 @@ export class AuthController {
     @Post('registration-confirmation')
     @HttpCode(HttpStatus.NO_CONTENT)
     async registrationConfirmation(@Body() dto: RegistrationConfirmationAuthDto) {
-        await this.authService.confirmEmailByCode(dto.code)
+        await this.authService.confirmEmailByCode(dto.code);
     }
 
     @Post('registration-email-resending')
     @HttpCode(HttpStatus.NO_CONTENT)
     async registrationEmailResending(@Body() dto: RegistrationEmailResendingAuthDto) {
-        // вызов authService
+        await this.authService.resendingMail(dto.email);
     }
 
     @Post('login')
@@ -39,13 +39,13 @@ export class AuthController {
     @Post('password-recovery')
     @HttpCode(HttpStatus.NO_CONTENT)
     async passwordRecovery(@Body() dto: PasswordRecoveryAuthDto) {
-        // вызов authService
+        await this.authService.emailPasswordRecovery(dto.email);
     }
 
     @Post('new-password')
     @HttpCode(HttpStatus.NO_CONTENT)
     async newPassword(@Body() dto: NewEmailPasswordRecoveryAttributes) {
-        // вызов authService
+        await this.authService.newPassword(dto);
     }
 
     @Get('me')

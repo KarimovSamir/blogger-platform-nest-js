@@ -41,6 +41,13 @@ export class UsersRepository {
         });
     }
 
+    async findByPasswordRecoveryCode(confirmationCode: string): Promise<UserDocument | null>  {
+        return this.userModel.findOne({
+            'passwordRecovery.recoveryCode': confirmationCode,
+            deletedAt: null,
+        });
+    }
+
     // Метод сохранения в Mongoose
     async save(user: UserDocument) {
         await user.save();

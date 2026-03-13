@@ -106,6 +106,12 @@ export class User {
     confirmEmail() {
         this.emailConfirmation.isConfirmed = true;
     }
+
+    updatePassword(newPasswordHash: string) {
+        this.passwordHash = newPasswordHash;
+        this.passwordRecovery.recoveryCode = null;
+        this.passwordRecovery.expirationDate = null;
+    }
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
