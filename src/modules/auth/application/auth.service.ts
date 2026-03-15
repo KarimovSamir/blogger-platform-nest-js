@@ -32,8 +32,12 @@ export class AuthService {
             dto.email.trim().toLowerCase()
         )
         if (user) {
-            throw new BadRequestException('Login or email already used');
-        };
+            if (user.email === dto.email) {
+                throw new BadRequestException({ message: 'Email already used', field: 'email' });
+            } else {
+                throw new BadRequestException({ message: 'Login already used', field: 'login' });
+            }
+        }
         const hashCode = await this.bcryptService.generateHash(dto.password);
         const codeUUID = randomUUID();
         const dateNow = new Date(Date.now() + 15 * 60 * 1000);
