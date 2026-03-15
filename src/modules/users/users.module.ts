@@ -5,6 +5,7 @@ import { User, UserSchema } from './domain/user.entity';
 import { UsersRepository } from './infrastructure/users.repository';
 import { UsersQueryRepository } from './infrastructure/query/users.query-repository';
 import { UsersController } from './api/users.controller';
+import { BcryptService } from '../../core/adapters/bcrypt.service';
 
 @Module({
     // Какие другие модули нужны этому модулю (users) для работы
@@ -15,6 +16,7 @@ import { UsersController } from './api/users.controller';
     // Кто принимает HTTP-запросы
     controllers: [UsersController],
     // Кто выполняет логику (сервисы, репозитории).
-    providers: [UsersService, UsersRepository, UsersQueryRepository],
+    providers: [UsersService, UsersRepository, UsersQueryRepository, BcryptService],
+    exports: [UsersRepository, MongooseModule]
 })
 export class UsersModule { }
