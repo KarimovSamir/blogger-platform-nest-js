@@ -1,51 +1,55 @@
-// import * as jwt from "jsonwebtoken";
-// import { Injectable } from "@nestjs/common";
-// import { ConfigService } from "@nestjs/config";
-// import { AccessPayload, RefreshPayload } from "../domain/jwt-payloads";
+import * as jwt from "jsonwebtoken";
+import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { AccessPayload, RefreshPayload } from "../domain/jwt-payloads";
 
-// @Injectable()
-// export class JwtService {
-//     constructor(private configService: ConfigService) {}
+@Injectable()
+export class JwtService {
+    constructor(private configService: ConfigService) {}
 
-//     async createAccessToken(userId: string): Promise<string> {
-//         const payload = { userId };
-//         const secret = this.configService.get<string>('AC_SECRET');
-//         const time = this.configService.get<string>('AC_TIME');
+    async createAccessToken(userId: string): Promise<string> {
+        const payload: AccessPayload = { userId };
+        // Берем строго из настроек. Нет ключа - будет ошибка.
+        const secret = this.configService.getOrThrow<string>('AC_SECRET');
+        const time = Number(this.configService.getOrThrow<number>('AC_TIME'));
 
-//         return jwt.sign(payload, secret, { expiresIn: time });
-//     }
+        return jwt.sign(payload, secret, { expiresIn: time });
+    }
 
-//     async createRefreshToken(
-//         userId: string,
-//         deviceId: string,
-//     ): Promise<string> {
-//         const payload: RefreshPayload = { userId, deviceId };
-//         return jwt.sign(payload, SETTINGS.RT_SECRET, {
-//             expiresIn: SETTINGS.RT_TIME,
-//         });
-//     }
+    async createRefreshToken(
+        userId: string,
+        deviceId: string,
+    ): Promise<string> {
+        const payload: RefreshPayload = { userId, deviceId };
+        const secret = this.configService.getOrThrow<string>('RT_SECRET');
+        const time = Number(this.configService.getOrThrow<number>('RT_TIME'));
 
-//     async decodeToken(token: string): Promise<unknown> {
-//         try {
-//             return jwt.decode(token);
-//         } catch {
-//             return null;
-//         }
-//     }
+        return jwt.sign(payload, secret, { expiresIn: time });
+    }
 
-//     async verifyAccessToken(token: string): Promise<AccessPayload | null> {
-//         try {
-//             return jwt.verify(token, SETTINGS.AC_SECRET) as AccessPayload;
-//         } catch {
-//             return null;
-//         }
-//     }
+    async decodeToken(token: string): Promise<unknown> {
+        try {
+            return jwt.decode(token);
+        } catch {
+            return null;
+        }
+    }
 
-//     async verifyRefreshToken(token: string): Promise<RefreshPayload | null> {
-//         try {
-//             return jwt.verify(token, SETTINGS.RT_SECRET) as RefreshPayload;
-//         } catch {
-//             return null;
-//         }
-//     }
-// }
+    async verifyAccessToken(token: string): Promise<AccessPayload | null> {
+        try {
+            const secret = this.configService.getOrThrow<string>('AC_SECRET');
+            return jwt.verify(token, secret) as unknown as AccessPayload;
+        } catch {
+            return null;
+        }
+    }
+
+    async verifyRefreshToken(token: string): Promise<RefreshPayload | null> {
+        try {
+            const secret = this.configService.getOrThrow<string>('RT_SECRET');
+            return jwt.verify(token, secret) as unknown as RefreshPayload;
+        } catch {
+            return null;
+        }
+    }
+}

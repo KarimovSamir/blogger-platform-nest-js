@@ -9,6 +9,7 @@ import { RegistrationAuthDto } from "../api/input-dto/registration.input-dto";
 import { randomUUID } from "crypto";
 import { ConfigService } from "@nestjs/config";
 import { NewEmailPasswordRecoveryAttributes } from "../api/input-dto/new-password.input-dto";
+import { JwtService } from "../../../core/adapters/jwt.service";
 
 @Injectable()
 export class AuthService {
@@ -21,7 +22,8 @@ export class AuthService {
         private bcryptService: BcryptService,
         // чтобы отправить письмо с кодом
         private mailerService: MailerService,
-        private configService: ConfigService
+        private configService: ConfigService,
+        private jwtService: JwtService
     ) { }
 
     async registerMail(dto: RegistrationAuthDto): Promise<void> {
@@ -147,5 +149,25 @@ export class AuthService {
         const newPasswordHash = await this.bcryptService.generateHash(dto.newPassword);
         user.updatePassword(newPasswordHash);
         await this.userRepository.save(user);
+    }
+
+    async validateUser(loginOrEmail: string, password: string): Promise<string | null> {
+        const user = await this.userRepository.findByLoginOrEmail(
+            loginOrEmail.trim(),
+            loginOrEmail.trim().toLowerCase()
+        )
+        if (!user) {
+            return null;
+        }
+        const checkPassword = await this.bcryptService.checkPassword(password, user.passwordHash)
+        if (!checkPassword) {
+            return null;
+        }
+        return user._id.toString();
+    }
+
+    async loginUser(userId: string) {
+        const accessToken = await this.jwtService.createAccessToken(userId);
+        return { accessToken };
     }
 }

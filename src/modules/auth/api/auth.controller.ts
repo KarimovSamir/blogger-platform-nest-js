@@ -1,11 +1,11 @@
-import { Controller, Post, Body, Get, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, Get, HttpCode, HttpStatus, UseGuards, Request } from '@nestjs/common';
 import { RegistrationAuthDto } from './input-dto/registration.input-dto';
-import { LoginAuthDto } from './input-dto/login.input-dto';
 import { RegistrationConfirmationAuthDto } from './input-dto/registration-confirmation.input-dto';
 import { RegistrationEmailResendingAuthDto } from './input-dto/registration-email-resending.input-dto';
 import { PasswordRecoveryAuthDto } from './input-dto/password-recovery.input-dto';
 import { NewEmailPasswordRecoveryAttributes } from './input-dto/new-password.input-dto';
 import { AuthService } from '../application/auth.service';
+import { LocalAuthGuard } from '../guards/local/local-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -31,9 +31,11 @@ export class AuthController {
         await this.authService.resendingMail(dto.email);
     }
 
+    @UseGuards(LocalAuthGuard)
     @Post('login')
-    async login(@Body() dto: LoginAuthDto) {
-        // вызов authService, возвращает { accessToken }
+    @HttpCode(HttpStatus.OK)
+    async login(@Request() req: any) {
+        return this.authService.loginUser(req.user.id);
     }
 
     @Post('password-recovery')
