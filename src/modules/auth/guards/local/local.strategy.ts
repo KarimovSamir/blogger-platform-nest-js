@@ -4,6 +4,9 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from '../../application/auth.service';
 import { UserContextDto } from '../dto/user-context.dto';
 
+// Локальная проверка по базе данных
+// вешается исключительно на эндпоинты входа
+
 @Injectable()
 // Наследуемся от базового класса PassportStrategy, передаем ему тип Strategy (Local)
 export class LocalStrategy extends PassportStrategy(Strategy) {
