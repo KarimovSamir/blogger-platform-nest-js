@@ -1,8 +1,17 @@
+import { Type } from 'class-transformer';
+
 export abstract class PaginatedViewDto<T> {
     abstract items: T;
+    @Type(() => Number)
     totalCount: number;
+
+    @Type(() => Number)
     pagesCount: number;
+
+    @Type(() => Number)
     page: number;
+
+    @Type(() => Number)
     pageSize: number;
 
     public static mapToView<T>(data: {
