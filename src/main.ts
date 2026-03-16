@@ -7,6 +7,7 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule);
 
     app.useGlobalPipes(new ValidationPipe({
+        transform: true, // Превращает сырые объекты в экземпляры классов DTO
         stopAtFirstError: true, // если у поля несколько ошибок, покажет только первую
         exceptionFactory: (errors) => {
             const errorsForResponse: any[] = [];
