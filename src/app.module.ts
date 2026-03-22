@@ -9,6 +9,7 @@ import { PostsModule } from './modules/posts/posts.module';
 import { TestingModule } from './modules/testing/testing.module';
 import { CommentsModule } from './modules/comments/comments.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CqrsModule } from '@nestjs/cqrs';
 
 @Module({
     imports: [
@@ -17,12 +18,13 @@ import { AuthModule } from './modules/auth/auth.module';
         // Когда сервер запускается, он выполняет MongooseModule.forRoot()
         // NestJS сам установит и будет удерживать соединение
         MongooseModule.forRoot(process.env.MONGO_URL || ""),
+        CqrsModule.forRoot(),
         UsersModule,
         BlogsModule,
         PostsModule,
         CommentsModule,
         TestingModule,
-        AuthModule
+        AuthModule,
     ],
     controllers: [AppController],
     providers: [AppService],

@@ -2,10 +2,14 @@ import { forwardRef, Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Blog, BlogSсhema } from "./domain/blog.entity";
 import { BlogsController } from "./api/blogs.controller";
-import { BlogsService } from "./application/blogs.service";
 import { BlogsRepository } from "./infrastructure/blogs.repository";
 import { BlogsQueryRepository } from "./infrastructure/query/blogs.query-repository";
 import { PostsModule } from "../posts/posts.module";
+import { CreateBlogUseCase } from "./application/use-cases/create-blog.use-case";
+import { UpdateBlogUseCase } from "./application/use-cases/update-blog.use-case";
+import { DeleteBlogUseCase } from "./application/use-cases/delete-blog.use-case";
+
+const useCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 
 @Module({
     // Какие другие модули нужны этому модулю (blogs) для работы
@@ -18,7 +22,11 @@ import { PostsModule } from "../posts/posts.module";
     // Кто принимает HTTP-запросы
     controllers: [BlogsController],
     // Кто выполняет логику (сервисы, репозитории).
-    providers: [BlogsService, BlogsRepository, BlogsQueryRepository],
+    providers: [
+        BlogsRepository, 
+        BlogsQueryRepository,
+        ...useCases
+    ],
     exports: [BlogsRepository]
 })
 export class BlogsModule { }

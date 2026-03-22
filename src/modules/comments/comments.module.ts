@@ -2,9 +2,12 @@ import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Comment, CommentSchema } from "./domain/comment.entity";
 import { CommentsController } from "./api/comments.controller";
-import { CommentsService } from "./application/comments.service";
 import { CommentsRepository } from "./infrastructure/comments.repository";
 import { CommentsQueryRepository } from "./infrastructure/query/comments.query-repository";
+import { CreateCommentUseCase } from "./application/use-cases/create-comments.use-case";
+
+// const useCases = [CreateCommentUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
+const useCases = [CreateCommentUseCase];
 
 @Module({
     imports: [
@@ -12,9 +15,9 @@ import { CommentsQueryRepository } from "./infrastructure/query/comments.query-r
     ],
     controllers: [CommentsController],
     providers: [
-        CommentsService,
         CommentsRepository,
         CommentsQueryRepository,
+        ...useCases
     ],
     exports: [CommentsQueryRepository],
 })

@@ -1,5 +1,4 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from "@nestjs/common";
-import { BlogsService } from "../application/blogs.service";
 import { BlogsQueryRepository } from "../infrastructure/query/blogs.query-repository";
 import { BlogQueryDto } from "./input-dto/get-blogs-query-params.input-dto";
 import { CreateBlogDto } from "./input-dto/create-blog.input-dto";
@@ -10,6 +9,10 @@ import { PostsQueryRepository } from "../../posts/infrastructure/query/posts.que
 import { PostsService } from "../../posts/application/posts.service";
 import { PostQueryDto } from "../../posts/api/input-dto/get-posts-query-params.input-dto";
 import { CreatePostForBlogDto } from "./input-dto/create-posts-for-blog.input-dto";
+import { CommandBus } from "@nestjs/cqrs";
+import { CreateBlogCommand } from "../application/use-cases/create-blog.use-case";
+import { UpdateBlogCommand } from "../application/use-cases/update-blog.use-case";
+import { DeleteBlogCommand } from "../application/use-cases/delete-blog.use-case";
 
 
 // @Query() вытаскивает данные после ? (например, ?page=1)
@@ -19,7 +22,7 @@ import { CreatePostForBlogDto } from "./input-dto/create-posts-for-blog.input-dt
 @Controller('blogs')
 export class BlogsController {
     constructor(
-        private readonly blogsService: BlogsService,
+        private readonly commandBus: CommandBus,
         // Внедряем Query-репозиторий для GET-запросов и формирования ответов
         private readonly blogsQueryRepository: BlogsQueryRepository,
         private readonly postsService: PostsService,
@@ -58,8 +61,8 @@ export class BlogsController {
 
     @Post()
     async create(@Body() createBlogDto: CreateBlogDto) {
-        // Создаём сущность через сервис и получаем айди
-        const blogId = await this.blogsService.create(createBlogDto);
+        // Создаём сущность через UseCase и получаем айди
+        const blogId = await this.commandBus.execute(new CreateBlogCommand(createBlogDto));
         // А затем берём готовый ViewDto через репозиторий
         return this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
     }
@@ -70,12 +73,12 @@ export class BlogsController {
         @Param('id') id: string,
         @Body() updateBlogDto: UpdateBlogDto,
     ) {
-        await this.blogsService.update(id, updateBlogDto);
+        await this.commandBus.execute(new UpdateBlogCommand(id, updateBlogDto));
     }
 
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     async remove(@Param('id') id: string) {
-        await this.blogsService.delete(id)
+        await this.commandBus.execute(new DeleteBlogCommand(id));
     }
 }
