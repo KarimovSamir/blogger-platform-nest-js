@@ -6,14 +6,13 @@ import { UpdateBlogDto } from "./input-dto/update-blog.input-dto";
 import { BlogViewDto } from "./view-dto/blog.view-dto";
 import { PaginatedViewDto } from "../../../core/dto/base.paginated.view-dto";
 import { PostsQueryRepository } from "../../posts/infrastructure/query/posts.query-repository";
-import { PostsService } from "../../posts/application/posts.service";
 import { PostQueryDto } from "../../posts/api/input-dto/get-posts-query-params.input-dto";
 import { CreatePostForBlogDto } from "./input-dto/create-posts-for-blog.input-dto";
 import { CommandBus } from "@nestjs/cqrs";
 import { CreateBlogCommand } from "../application/use-cases/create-blog.use-case";
 import { UpdateBlogCommand } from "../application/use-cases/update-blog.use-case";
 import { DeleteBlogCommand } from "../application/use-cases/delete-blog.use-case";
-
+import { CreatePostForBlogCommand } from "../../posts/application/use-cases/create-post-for-blog.use-case";
 
 // @Query() вытаскивает данные после ? (например, ?page=1)
 // @Body() вытаскивает тело POST-запроса (req.body)
@@ -25,7 +24,6 @@ export class BlogsController {
         private readonly commandBus: CommandBus,
         // Внедряем Query-репозиторий для GET-запросов и формирования ответов
         private readonly blogsQueryRepository: BlogsQueryRepository,
-        private readonly postsService: PostsService,
         private readonly postsQueryRepository: PostsQueryRepository,
     ) { }
 
@@ -55,7 +53,7 @@ export class BlogsController {
         @Param('blogId') blogId: string, 
         @Body() createPostDto: CreatePostForBlogDto
     ) {
-        const createdPostId = await this.postsService.createForBlog(blogId, createPostDto);
+        const createdPostId = await this.commandBus.execute(new CreatePostForBlogCommand(blogId, createPostDto));
         return this.postsQueryRepository.getByIdOrNotFoundFail(createdPostId);
     }
 

@@ -1,5 +1,4 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from "@nestjs/common";
-import { PostsService } from "../application/posts.service";
 import { PostsQueryRepository } from "../infrastructure/query/posts.query-repository";
 import { CreatePostInputDto } from "./input-dto/create-post.input-dto";
 import { UpdatePostInputDto } from "./input-dto/update-post.input-dto";
@@ -8,12 +7,16 @@ import { PostViewDto } from "./view-dto/post.view-dto";
 import { PaginatedViewDto } from "../../../core/dto/base.paginated.view-dto";
 import { CommentsQueryRepository } from "../../comments/infrastructure/query/comments.query-repository";
 import { CommentQueryDto } from "../../comments/api/input-dto/get-comments-query-params.input-dto";
+import { CommandBus } from "@nestjs/cqrs";
+import { CreatePostCommand } from "../application/use-cases/create-post.use-case";
+import { DeletePostCommand } from "../application/use-cases/delete-post.use-case";
+import { UpdatePostCommand } from "../application/use-cases/update-post.use-case";
 
 @Controller('posts')
 export class PostsController {
     constructor(
-        private postsService: PostsService,
-        private postsQueryRepository: PostsQueryRepository,
+        private readonly commandBus: CommandBus,
+        private readonly postsQueryRepository: PostsQueryRepository,
         private readonly commentsQueryRepository: CommentsQueryRepository,
     ) {}
 
@@ -38,19 +41,22 @@ export class PostsController {
 
     @Post()
     async create(@Body() dto: CreatePostInputDto): Promise<PostViewDto> {
-        const postId = await this.postsService.create(dto);
+        const postId = await this.commandBus.execute(new CreatePostCommand(dto));
         return this.postsQueryRepository.getByIdOrNotFoundFail(postId);
     }
 
     @Put(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
-    async update(@Param('id') id: string, @Body() dto: UpdatePostInputDto): Promise<void> {
-        await this.postsService.update(id, dto);
+    async update(
+        @Param('id') id: string, 
+        @Body() dto: UpdatePostInputDto
+    ) {
+        await this.commandBus.execute(new UpdatePostCommand(id, dto));
     }
 
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
-    async delete(@Param('id') id: string): Promise<void> {
-        await this.postsService.delete(id);
+    async delete(@Param('id') id: string) {
+        await this.commandBus.execute(new DeletePostCommand(id));
     }
 }

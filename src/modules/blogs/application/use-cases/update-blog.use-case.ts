@@ -18,7 +18,6 @@ export class UpdateBlogUseCase implements ICommandHandler<UpdateBlogCommand, voi
     async execute(command: UpdateBlogCommand): Promise<void> {
         // Достаем из коробки нужные данные
         const { id, dto } = command; 
-        
         const blog = await this.blogsRepository.findOrNotFoundFail(id);
         blog.update(dto);
         await this.blogsRepository.save(blog);
