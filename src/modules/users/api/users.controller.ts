@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Param, Delete, Query, HttpCode, HttpStatus, Put, UseGuards } from '@nestjs/common';
-import { UsersService } from '../application/users.service';
+import { CommandBus } from '@nestjs/cqrs';
 import { UsersQueryRepository } from '../infrastructure/query/users.query-repository';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from './input-dto/update-user.input-dto';
@@ -7,6 +7,10 @@ import { UserQueryDto } from './input-dto/get-users-query-params.input-dto';
 import { UserViewDto } from './view-dto/user.view-dto';
 import { PaginatedViewDto } from "../../../core/dto/base.paginated.view-dto";
 import { BasicAuthGuard } from '../../auth/guards/basic/basic-auth.guard';
+
+import { CreateUserCommand } from '../application/use-cases/create-user.use-case';
+import { UpdateUserCommand } from '../application/use-cases/update-user.use-case';
+import { DeleteUserCommand } from '../application/use-cases/delete-user.use-case';
 
 // @Query() вытаскивает данные после ? (например, ?page=1)
 // @Body() вытаскивает тело POST-запроса (req.body)
@@ -17,7 +21,7 @@ import { BasicAuthGuard } from '../../auth/guards/basic/basic-auth.guard';
 @Controller('users')
 export class UsersController {
     constructor(
-        private readonly usersService: UsersService,
+        private readonly commandBus: CommandBus,
         // Внедряем Query-репозиторий для GET-запросов и формирования ответов
         private readonly usersQueryRepository: UsersQueryRepository,
     ) { }
@@ -31,8 +35,8 @@ export class UsersController {
 
     @Post()
     async create(@Body() createUserDto: CreateUserDto) {
-        // Создаём сущность через сервис и получаем айди
-        const userId = await this.usersService.create(createUserDto);
+        // Создаём сущность через UseCase и получаем айди
+        const userId = await this.commandBus.execute(new CreateUserCommand(createUserDto));
         // А затем берём готовый ViewDto через репозиторий
         return this.usersQueryRepository.getByIdOrNotFoundFail(userId);
     }
@@ -43,12 +47,12 @@ export class UsersController {
         @Param('id') id: string,
         @Body() updateUserDto: UpdateUserDto,
     ) {
-        await this.usersService.updateUser(id, updateUserDto);
+        await this.commandBus.execute(new UpdateUserCommand(id, updateUserDto));
     }
 
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     async remove(@Param('id') id: string) {
-        await this.usersService.deleteUser(id)
+        await this.commandBus.execute(new DeleteUserCommand(id));
     }
 }
