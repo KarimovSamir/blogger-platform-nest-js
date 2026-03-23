@@ -5,9 +5,10 @@ import { CommentsController } from "./api/comments.controller";
 import { CommentsRepository } from "./infrastructure/comments.repository";
 import { CommentsQueryRepository } from "./infrastructure/query/comments.query-repository";
 import { CreateCommentUseCase } from "./application/use-cases/create-comments.use-case";
+import { UpdateBlogUseCase } from "../blogs/application/use-cases/update-blog.use-case";
+import { DeleteBlogUseCase } from "../blogs/application/use-cases/delete-blog.use-case";
 
-// const useCases = [CreateCommentUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
-const useCases = [CreateCommentUseCase];
+const useCases = [CreateCommentUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 
 @Module({
     imports: [
