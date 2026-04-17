@@ -51,8 +51,7 @@ export class UpdateCommentLikeStatusUseCase implements ICommandHandler<UpdateCom
             existingLike.updateStatus(newStatus);
             await this.likesRepository.save(existingLike);
         } else {
-            const newLike = Like.createInstance(commentId, userId, login, newStatus);
-            await this.likesRepository.save(newLike);
+            await this.likesRepository.create(commentId, userId, login, newStatus);
         }
     }
 }
