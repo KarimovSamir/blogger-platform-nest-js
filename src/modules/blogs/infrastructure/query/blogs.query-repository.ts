@@ -4,7 +4,7 @@ import { Blog } from '../../domain/blog.entity';
 import type { BlogModelType } from '../../domain/blog.entity';
 import { BlogViewDto } from '../../api/view-dto/blog.view-dto';
 import { BlogQueryDto } from '../../api/input-dto/get-blogs-query-params.input-dto';
-import { PaginatedViewDto } from 'src/core/dto/base.paginated.view-dto';
+import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 
 @Injectable() // Делаем класс доступным для внедрения в контроллер
 export class BlogsQueryRepository {

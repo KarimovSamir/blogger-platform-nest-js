@@ -1,4 +1,4 @@
-import { UserDocument } from "src/modules/users/domain/user.entity";
+import { UserDocument } from "../../domain/user.entity";
 
 export class UserViewDto {
     id: string;
