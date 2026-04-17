@@ -1,12 +1,12 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Blog } from "../domain/blog.entity";
-import type { BlogDocument, BlogModelType } from "../domain/blog.entity";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Blog } from '../domain/blog.entity';
+import type { BlogDocument, BlogModelType } from '../domain/blog.entity';
 
 @Injectable() // Делает этот класс доступным для внедрения зависимостей (DI)
 export class BlogsRepository {
     // Внедряем нашу Mongoose-модель. Теперь репозиторий может ходить в базу.
-    constructor(@InjectModel(Blog.name) private blogModel: BlogModelType) { }
+    constructor(@InjectModel(Blog.name) private blogModel: BlogModelType) {}
 
     // Получаем объект или null
     // Можно использовать если отсутствие blog - не проблема

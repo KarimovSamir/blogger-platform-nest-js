@@ -52,6 +52,11 @@ export class Comment {
         return comment as CommentDocument;
     }
 
+    updateLikesCount(likesCount: number, dislikesCount: number) {
+        this.likesInfo.likesCount = likesCount;
+        this.likesInfo.dislikesCount = dislikesCount;
+    }
+
     update(content: string) {
         this.content = content;
     }

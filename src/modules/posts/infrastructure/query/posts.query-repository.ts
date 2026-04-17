@@ -1,14 +1,14 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Post } from "../../domain/post.entity";
-import type { PostModelType } from "../../domain/post.entity";
-import { PostViewDto } from "../../api/view-dto/post.view-dto";
-import { PostQueryDto } from "../../api/input-dto/get-posts-query-params.input-dto";
-import { PaginatedViewDto } from "../../../../core/dto/base.paginated.view-dto";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Post } from '../../domain/post.entity';
+import type { PostModelType } from '../../domain/post.entity';
+import { PostViewDto } from '../../api/view-dto/post.view-dto';
+import { PostQueryDto } from '../../api/input-dto/get-posts-query-params.input-dto';
+import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 
 @Injectable()
 export class PostsQueryRepository {
-    constructor(@InjectModel(Post.name) private postModel: PostModelType) { }
+    constructor(@InjectModel(Post.name) private postModel: PostModelType) {}
 
     async getByIdOrNotFoundFail(id: string): Promise<PostViewDto> {
         const post = await this.postModel.findOne({
@@ -23,7 +23,9 @@ export class PostsQueryRepository {
         return PostViewDto.mapToView(post);
     }
 
-    async getAll(query: PostQueryDto): Promise<PaginatedViewDto<PostViewDto[]>> {
+    async getAll(
+        query: PostQueryDto,
+    ): Promise<PaginatedViewDto<PostViewDto[]>> {
         const filter = { deletedAt: null };
 
         const posts = await this.postModel
@@ -33,7 +35,7 @@ export class PostsQueryRepository {
             .limit(query.pageSize);
 
         const totalCount = await this.postModel.countDocuments(filter);
-        const items = posts.map(PostViewDto.mapToView);
+        const items = posts.map((post) => PostViewDto.mapToView(post));
 
         return PaginatedViewDto.mapToView({
             items,
@@ -43,7 +45,10 @@ export class PostsQueryRepository {
         });
     }
 
-    async getAllByBlogId(blogId: string, query: PostQueryDto): Promise<PaginatedViewDto<PostViewDto[]>> {
+    async getAllByBlogId(
+        blogId: string,
+        query: PostQueryDto,
+    ): Promise<PaginatedViewDto<PostViewDto[]>> {
         // Добавляем deletedAt: null, чтобы не отдать удаленные посты
         const filter = { blogId: blogId, deletedAt: null };
 
@@ -54,7 +59,7 @@ export class PostsQueryRepository {
             .limit(query.pageSize);
 
         const totalCount = await this.postModel.countDocuments(filter);
-        const items = posts.map(PostViewDto.mapToView);
+        const items = posts.map((post) => PostViewDto.mapToView(post));
 
         return PaginatedViewDto.mapToView({
             items,

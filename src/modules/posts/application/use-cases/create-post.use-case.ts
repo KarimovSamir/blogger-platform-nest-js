@@ -12,7 +12,10 @@ export class CreatePostCommand {
 
 // Обработчик команды
 @CommandHandler(CreatePostCommand)
-export class CreatePostUseCase implements ICommandHandler<CreatePostCommand, string> {
+export class CreatePostUseCase implements ICommandHandler<
+    CreatePostCommand,
+    string
+> {
     constructor(
         @InjectModel(Post.name) private postModel: PostModelType,
         private postsRepository: PostsRepository,
@@ -20,7 +23,9 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand, str
     ) {}
 
     async execute(command: CreatePostCommand): Promise<string> {
-        const blog = await this.blogsRepository.findOrNotFoundFail(command.dto.blogId);
+        const blog = await this.blogsRepository.findOrNotFoundFail(
+            command.dto.blogId,
+        );
         const post = this.postModel.createInstance(
             command.dto.title,
             command.dto.shortDescription,

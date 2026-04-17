@@ -24,7 +24,7 @@ export class UpdateCommentUseCase implements ICommandHandler<UpdateCommentComman
             throw new ForbiddenException('You can update only your own comments');
         }
 
-        comment.update(command.dto.content); // Предполагаю, что у тебя есть такой метод в entity
+        comment.update(command.dto.content);
         await this.commentsRepository.save(comment);
     }
 }

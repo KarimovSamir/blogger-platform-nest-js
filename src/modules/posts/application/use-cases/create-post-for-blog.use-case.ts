@@ -8,14 +8,17 @@ import { CreatePostForBlogDto } from '../../../blogs/api/input-dto/create-posts-
 // Команда - просто коробка с данными
 export class CreatePostForBlogCommand {
     constructor(
-        public blogId: string, 
-        public dto: CreatePostForBlogDto
+        public blogId: string,
+        public dto: CreatePostForBlogDto,
     ) {}
 }
 
 // Обработчик команды
 @CommandHandler(CreatePostForBlogCommand)
-export class CreatePostForBlogUseCase implements ICommandHandler<CreatePostForBlogCommand, string> {
+export class CreatePostForBlogUseCase implements ICommandHandler<
+    CreatePostForBlogCommand,
+    string
+> {
     constructor(
         @InjectModel(Post.name) private postModel: PostModelType,
         private postsRepository: PostsRepository,

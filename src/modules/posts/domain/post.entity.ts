@@ -1,5 +1,14 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { HydratedDocument, Model } from "mongoose";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument, Model } from 'mongoose';
+
+@Schema({ _id: false })
+class PostLikesInfo {
+    @Prop({ type: Number, default: 0 })
+    likesCount: number;
+
+    @Prop({ type: Number, default: 0 })
+    dislikesCount: number;
+}
 
 @Schema({ timestamps: true })
 export class Post {
@@ -21,6 +30,10 @@ export class Post {
     @Prop({ type: Date, nullable: true, default: null })
     deletedAt: Date | null;
 
+    // хранение счетчиков лайков в базу
+    @Prop({ type: PostLikesInfo, default: () => ({ likesCount: 0, dislikesCount: 0 }) })
+    likesInfo: PostLikesInfo;
+
     createdAt: Date;
 
     static createInstance(
@@ -28,7 +41,7 @@ export class Post {
         shortDescription: string,
         content: string,
         blogId: string,
-        blogName: string
+        blogName: string,
     ): PostDocument {
         const post = new this();
         post.title = title;
@@ -36,7 +49,14 @@ export class Post {
         post.content = content;
         post.blogId = blogId;
         post.blogName = blogName;
+        post.likesInfo = { likesCount: 0, dislikesCount: 0 };
         return post as PostDocument;
+    }
+
+    // обновления счетчиков, вызывается из UseCase
+    updateLikesCount(likesCount: number, dislikesCount: number) {
+        this.likesInfo.likesCount = likesCount;
+        this.likesInfo.dislikesCount = dislikesCount;
     }
 
     update(dto: {

@@ -12,7 +12,10 @@ export class CreateBlogCommand {
 
 // Обработчик команды
 @CommandHandler(CreateBlogCommand)
-export class CreateBlogUseCase implements ICommandHandler<CreateBlogCommand, string> {
+export class CreateBlogUseCase implements ICommandHandler<
+    CreateBlogCommand,
+    string
+> {
     constructor(
         @InjectModel(Blog.name) private blogModel: BlogModelType,
         private blogsRepository: BlogsRepository,

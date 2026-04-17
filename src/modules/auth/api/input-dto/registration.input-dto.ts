@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import {
+    IsNotEmpty,
+    IsString,
+    Matches,
+    MaxLength,
+    MinLength,
+} from 'class-validator';
 
 export class RegistrationAuthDto {
     @IsNotEmpty()
@@ -17,4 +23,4 @@ export class RegistrationAuthDto {
     @IsString()
     @Matches(/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/)
     email: string;
-};
+}

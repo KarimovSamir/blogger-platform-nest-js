@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, MaxLength, MinLength } from "class-validator";
+import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class NewEmailPasswordRecoveryAttributes {
     @IsNotEmpty()
@@ -10,4 +10,4 @@ export class NewEmailPasswordRecoveryAttributes {
     @IsNotEmpty()
     @IsString()
     recoveryCode: string;
-};
+}

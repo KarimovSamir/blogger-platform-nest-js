@@ -6,19 +6,20 @@ import { UpdatePostInputDto } from '../../api/input-dto/update-post.input-dto';
 export class UpdatePostCommand {
     constructor(
         public id: string,
-        public dto: UpdatePostInputDto
+        public dto: UpdatePostInputDto,
     ) {}
 }
 
 // Обработчик команды
 @CommandHandler(UpdatePostCommand)
-export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand, void> {
-    constructor(
-        private postsRepository: PostsRepository,
-    ) {}
+export class UpdatePostUseCase implements ICommandHandler<
+    UpdatePostCommand,
+    void
+> {
+    constructor(private postsRepository: PostsRepository) {}
 
     async execute(command: UpdatePostCommand): Promise<void> {
-        const { id, dto } = command; 
+        const { id, dto } = command;
         const post = await this.postsRepository.findOrNotFoundFail(id);
         post.update(dto);
         await this.postsRepository.save(post);

@@ -6,10 +6,11 @@ export class DeleteBlogCommand {
 }
 
 @CommandHandler(DeleteBlogCommand)
-export class DeleteBlogUseCase implements ICommandHandler<DeleteBlogCommand, void> {
-    constructor(
-        private blogsRepository: BlogsRepository,
-    ) {}
+export class DeleteBlogUseCase implements ICommandHandler<
+    DeleteBlogCommand,
+    void
+> {
+    constructor(private blogsRepository: BlogsRepository) {}
 
     async execute(command: DeleteBlogCommand): Promise<void> {
         const blog = await this.blogsRepository.findOrNotFoundFail(command.id);
