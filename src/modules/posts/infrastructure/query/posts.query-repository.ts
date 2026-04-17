@@ -59,6 +59,7 @@ export class PostsQueryRepository {
     async getAllByBlogId(
         blogId: string,
         query: PostQueryDto,
+        userId?: string,
     ): Promise<PaginatedViewDto<PostViewDto[]>> {
         // Добавляем deletedAt: null, чтобы не отдать удаленные посты
         const filter = { blogId: blogId, deletedAt: null };
@@ -70,8 +71,13 @@ export class PostsQueryRepository {
             .limit(query.pageSize);
 
         const totalCount = await this.postModel.countDocuments(filter);
-        const items = posts.map((post) => PostViewDto.mapToView(post));
-
+        const items = await Promise.all(
+            posts.map(async (post) => {
+                const { myStatus, newestLikes } = await this.buildLikeData(post._id.toString(), userId);
+                return PostViewDto.mapToView(post, myStatus, newestLikes);
+            })
+        );
+        
         return PaginatedViewDto.mapToView({
             items,
             totalCount,

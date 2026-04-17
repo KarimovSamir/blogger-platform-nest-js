@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Req, UseGuards } from "@nestjs/common";
 import { BlogsQueryRepository } from "../infrastructure/query/blogs.query-repository";
 import { BlogQueryDto } from "./input-dto/get-blogs-query-params.input-dto";
 import { CreateBlogDto } from "./input-dto/create-blog.input-dto";
@@ -44,17 +44,18 @@ export class BlogsController {
     @UseGuards(JwtOptionalAuthGuard)
     @Get(':blogId/posts')
     async getPostsForBlog(
-        @Param('blogId') blogId: string, 
-        @Query() query: PostQueryDto
+        @Param('blogId') blogId: string,
+        @Query() query: PostQueryDto,
+        @Req() req: any,
     ) {
         await this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
-        return this.postsQueryRepository.getAllByBlogId(blogId, query);
+        return this.postsQueryRepository.getAllByBlogId(blogId, query, req.user?.userId);
     }
 
     @UseGuards(BasicAuthGuard)
     @Post(':blogId/posts')
     async createPostForBlog(
-        @Param('blogId') blogId: string, 
+        @Param('blogId') blogId: string,
         @Body() createPostDto: CreatePostForBlogDto
     ) {
         const createdPostId = await this.commandBus.execute(new CreatePostForBlogCommand(blogId, createPostDto));

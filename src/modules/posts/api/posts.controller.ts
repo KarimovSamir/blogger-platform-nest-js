@@ -13,6 +13,8 @@ import {
     Request
 } from '@nestjs/common';
 import { PostsQueryRepository } from '../infrastructure/query/posts.query-repository';
+import { CreateCommentCommand } from '../../comments/application/use-cases/create-comments.use-case';
+import { CommentInputDto } from '../../comments/api/input-dto/comment.input-dto';
 import { CreatePostInputDto } from './input-dto/create-post.input-dto';
 import { UpdatePostInputDto } from './input-dto/update-post.input-dto';
 import { PostQueryDto } from './input-dto/get-posts-query-params.input-dto';
@@ -58,7 +60,6 @@ export class PostsController {
         return this.postsQueryRepository.getByIdOrNotFoundFail(id, userId);
     }
 
-    @UseGuards(JwtAuthGuard)
     @Get(':postId/comments')
     async getCommentsForPost(
         @Param('postId') postId: string,
@@ -77,6 +78,23 @@ export class PostsController {
         return this.postsQueryRepository.getByIdOrNotFoundFail(postId);
     }
 
+    @UseGuards(JwtAuthGuard)
+    @Post(':postId/comments')
+    @HttpCode(HttpStatus.CREATED)
+    async createComment(
+        @Param('postId') postId: string,
+        @Body() dto: CommentInputDto,
+        @Request() req: any,
+    ) {
+        await this.postsQueryRepository.getByIdOrNotFoundFail(postId); // проверка что пост существует
+        const commentId = await this.commandBus.execute(
+            new CreateCommentCommand(dto.content, req.user.userId, req.user.login, postId),
+        );
+        return this.commentsQueryRepository.getByIdOrNotFoundFail(commentId);
+    }
+
+
+    @UseGuards(BasicAuthGuard)
     @Put(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     async update(@Param('id') id: string, @Body() dto: UpdatePostInputDto) {
