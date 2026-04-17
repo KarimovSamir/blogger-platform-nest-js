@@ -11,12 +11,14 @@ import { DeletePostUseCase } from './application/use-cases/delete-post.use-case'
 import { CreatePostUseCase } from './application/use-cases/create-post.use-case';
 import { UpdatePostUseCase } from './application/use-cases/update-post.use-case';
 import { CreatePostForBlogUseCase } from './application/use-cases/create-post-for-blog.use-case';
+import { UpdatePostLikeStatusUseCase } from './application/use-cases/update-post-like-status.use-case';
 
 const useCases = [
     CreatePostUseCase,
     DeletePostUseCase,
     UpdatePostUseCase,
     CreatePostForBlogUseCase,
+    UpdatePostLikeStatusUseCase
 ];
 
 @Module({

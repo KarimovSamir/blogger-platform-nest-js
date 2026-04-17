@@ -7,8 +7,9 @@ import { CommentsQueryRepository } from "./infrastructure/query/comments.query-r
 import { CreateCommentUseCase } from "./application/use-cases/create-comments.use-case";
 import { UpdateBlogUseCase } from "../blogs/application/use-cases/update-blog.use-case";
 import { DeleteBlogUseCase } from "../blogs/application/use-cases/delete-blog.use-case";
+import { UpdateCommentLikeStatusUseCase } from "./application/use-cases/update-comment-like-status.use-case";
 
-const useCases = [CreateCommentUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
+const useCases = [CreateCommentUseCase, UpdateBlogUseCase, DeleteBlogUseCase, UpdateCommentLikeStatusUseCase];
 
 @Module({
     imports: [
