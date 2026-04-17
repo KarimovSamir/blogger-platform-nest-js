@@ -1,32 +1,42 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ACCESS_TOKEN_STRATEGY_INJECT_TOKEN, REFRESH_TOKEN_STRATEGY_INJECT_TOKEN } from '../../auth.constants';
+import { ConfigService } from '@nestjs/config';
 
-// Паттерн команда (Коробка с данными)
 export class LoginUserCommand {
     constructor(public userId: string) {}
 }
 
-// Обработчик команды
 @CommandHandler(LoginUserCommand)
 export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
     constructor(
-        @Inject(ACCESS_TOKEN_STRATEGY_INJECT_TOKEN)
-        private accessTokenService: JwtService,
-
-        @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
-        private refreshTokenService: JwtService,
+        private jwtService: JwtService, 
+        private configService: ConfigService
     ) {}
 
     async execute(command: LoginUserCommand): Promise<{ accessToken: string, refreshToken: string }> {
-        const accessToken = this.accessTokenService.sign({ userId: command.userId });
-        // В будущем тут добавится deviceId, пока делаем заглушку, как требует задание
-        const refreshToken = this.refreshTokenService.sign({ userId: command.userId, deviceId: 'dummy-device-id' });
+        // 1. Достаем userId из команды! <-- ИСПРАВЛЕНИЕ ЗДЕСЬ
+        const { userId } = command; 
 
-        return {
-            accessToken,
-            refreshToken
-        };
+        // 2. Достаем секреты
+        const acSecret = this.configService.getOrThrow<string>('AC_SECRET');
+        const rtSecret = this.configService.getOrThrow<string>('RT_SECRET');
+
+        // 3. Достаем время и переводим в число
+        const acTime = parseInt(this.configService.getOrThrow<string>('AC_TIME'), 10);
+        const rtTime = parseInt(this.configService.getOrThrow<string>('RT_TIME'), 10);
+
+        // 4. Генерируем Access Token (теперь userId доступен)
+        const accessToken = await this.jwtService.signAsync(
+            { userId: userId }, 
+            { secret: acSecret, expiresIn: acTime }
+        );
+
+        // 5. Генерируем Refresh Token
+        const refreshToken = await this.jwtService.signAsync(
+            { userId: userId, deviceId: "some-device-id" }, 
+            { secret: rtSecret, expiresIn: rtTime }
+        );
+
+        return { accessToken, refreshToken };
     }
 }

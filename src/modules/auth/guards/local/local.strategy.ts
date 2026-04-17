@@ -1,37 +1,39 @@
 import { Strategy } from 'passport-local';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { AuthService } from '../../application/auth.service';
 import { UserContextDto } from '../dto/user-context.dto';
-
-// Локальная проверка по базе данных
-// вешается исключительно на эндпоинты входа
+import { UsersRepository } from '../../../users/infrastructure/users.repository';
+import { BcryptService } from '../../../../core/adapters/bcrypt.service';
 
 @Injectable()
-// Наследуемся от базового класса PassportStrategy, передаем ему тип Strategy (Local)
 export class LocalStrategy extends PassportStrategy(Strategy) {
     
-    // Внедряем AuthService, так как именно в нем лежит метод проверки пароля
-    constructor(private authService: AuthService) {
-        // Здесь мы говорим стратегии: "Ищи логин в поле loginOrEmail".
+    constructor(
+        private usersRepository: UsersRepository,
+        private bcryptService: BcryptService,
+    ) {
         super({ usernameField: 'loginOrEmail' }); 
     }
 
-    // Этот метод автоматически вызовется самим Passport-ом, когда придет запрос на логин.
-    // Passport сам достанет loginOrEmail и password из тела запроса и передаст их сюда.
     async validate(username: string, password: string): Promise<UserContextDto> {
+        // 1. Ищем пользователя по логину или email
+        const user = await this.usersRepository.findByLoginOrEmail(
+            username.trim(),
+            username.trim().toLowerCase()
+        );
         
-        // 1. Вызываем метод из Шага 1
-        const userId = await this.authService.validateUser(username, password);
-        
-        // 2. Если метод вернул null (пароль не совпал или юзера нет)
-        if (!userId) {
-            // Кидаем 401 ошибку. Запрос обрывается, контроллер даже не начнет работу.
+        if (!user) {
             throw new UnauthorizedException('Invalid username or password');
         }
 
-        // 3. Если всё ок, формируем объект "бейджика" (UserContextDto)
-        // То, что мы возвращаем здесь, NestJS автоматически положит в объект req.user!
-        return { id: userId };
+        // 2. Сравниваем пароль
+        const checkPassword = await this.bcryptService.checkPassword(password, user.passwordHash);
+        
+        if (!checkPassword) {
+            throw new UnauthorizedException('Invalid username or password');
+        }
+
+        // 3. Возвращаем бейджик, который упадет в req.user
+        return { id: user._id.toString() };
     }
 }
