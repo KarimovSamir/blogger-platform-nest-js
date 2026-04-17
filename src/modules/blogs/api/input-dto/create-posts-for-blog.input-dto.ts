@@ -1,6 +1,8 @@
+import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class CreatePostForBlogDto {
+    @Transform(({ value }) => value?.trim())
     @IsString()
     @IsNotEmpty()
     @MinLength(2)
@@ -13,6 +15,7 @@ export class CreatePostForBlogDto {
     @MaxLength(100)
     shortDescription: string;
 
+    @Transform(({ value }) => value?.trim())
     @IsString()
     @IsNotEmpty()
     @MinLength(2)

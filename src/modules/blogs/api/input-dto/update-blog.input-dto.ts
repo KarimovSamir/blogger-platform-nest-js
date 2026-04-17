@@ -1,6 +1,8 @@
 import { IsNotEmpty, IsString, IsUrl, MaxLength, MinLength } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class UpdateBlogDto {
+    @Transform(({ value }) => value?.trim())
     @IsString()
     @IsNotEmpty()
     @MinLength(2)
