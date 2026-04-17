@@ -19,6 +19,13 @@ export class LikesRepository {
         return this.likeModel.findOne({ userId, parentId });
     }
 
+    async findNewestLikesByParentId(parentId: string, limit: number): Promise<LikeDocument[]> {
+        return this.likeModel
+            .find({ parentId, status: LikeStatus.Like })
+            .sort({ createdAt: -1 })
+            .limit(limit);
+    }
+
     async save(like: LikeDocument): Promise<void> {
         await like.save();
     }

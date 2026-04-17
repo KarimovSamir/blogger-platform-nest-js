@@ -14,6 +14,7 @@ import { UpdateBlogCommand } from "../application/use-cases/update-blog.use-case
 import { DeleteBlogCommand } from "../application/use-cases/delete-blog.use-case";
 import { CreatePostForBlogCommand } from "../../posts/application/use-cases/create-post-for-blog.use-case";
 import { BasicAuthGuard } from "../../auth/guards/basic/basic-auth.guard";
+import { JwtOptionalAuthGuard } from "../../auth/guards/jwt/jwt-optional-auth.guard";
 
 // @Query() вытаскивает данные после ? (например, ?page=1)
 // @Body() вытаскивает тело POST-запроса (req.body)
@@ -40,6 +41,7 @@ export class BlogsController {
         return this.blogsQueryRepository.getByIdOrNotFoundFail(id);
     }
 
+    @UseGuards(JwtOptionalAuthGuard)
     @Get(':blogId/posts')
     async getPostsForBlog(
         @Param('blogId') blogId: string, 

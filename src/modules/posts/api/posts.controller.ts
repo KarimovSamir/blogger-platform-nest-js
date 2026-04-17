@@ -28,6 +28,7 @@ import { UpdatePostLikeStatusCommand } from '../application/use-cases/update-pos
 import { JwtAuthGuard } from '../../auth/guards/jwt/jwt-auth.guard';
 import { LikeInputDto } from '../../likes/api/input-dto/like.input-dto';
 import { BasicAuthGuard } from '../../auth/guards/basic/basic-auth.guard';
+import { JwtOptionalAuthGuard } from '../../auth/guards/jwt/jwt-optional-auth.guard';
 
 @Controller('posts')
 export class PostsController {
@@ -37,16 +38,24 @@ export class PostsController {
         private readonly commentsQueryRepository: CommentsQueryRepository,
     ) { }
 
+    @UseGuards(JwtOptionalAuthGuard)
     @Get()
     async getAll(
         @Query() query: PostQueryDto,
+        @Request() req: any,
     ): Promise<PaginatedViewDto<PostViewDto[]>> {
-        return this.postsQueryRepository.getAll(query);
+        const userId = req.user?.userId;
+        return this.postsQueryRepository.getAll(query, userId);
     }
 
+    @UseGuards(JwtOptionalAuthGuard)
     @Get(':id')
-    async getById(@Param('id') id: string): Promise<PostViewDto> {
-        return this.postsQueryRepository.getByIdOrNotFoundFail(id);
+    async getById(
+        @Param('id') id: string,
+        @Request() req: any,
+    ): Promise<PostViewDto> {
+        const userId = req.user?.userId;
+        return this.postsQueryRepository.getByIdOrNotFoundFail(id, userId);
     }
 
     @UseGuards(JwtAuthGuard)
