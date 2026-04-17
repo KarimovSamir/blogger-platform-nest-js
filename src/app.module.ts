@@ -10,6 +10,7 @@ import { TestingModule } from './modules/testing/testing.module';
 import { CommentsModule } from './modules/comments/comments.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CqrsModule } from '@nestjs/cqrs';
+import { LikesModule } from './modules/likes/likes.module';
 
 @Module({
     imports: [
@@ -25,6 +26,7 @@ import { CqrsModule } from '@nestjs/cqrs';
         CommentsModule,
         TestingModule,
         AuthModule,
+        LikesModule
     ],
     controllers: [AppController],
     providers: [AppService],

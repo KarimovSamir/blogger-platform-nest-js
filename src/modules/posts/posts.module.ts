@@ -12,6 +12,7 @@ import { CreatePostUseCase } from './application/use-cases/create-post.use-case'
 import { UpdatePostUseCase } from './application/use-cases/update-post.use-case';
 import { CreatePostForBlogUseCase } from './application/use-cases/create-post-for-blog.use-case';
 import { UpdatePostLikeStatusUseCase } from './application/use-cases/update-post-like-status.use-case';
+import { LikesModule } from '../likes/likes.module';
 
 const useCases = [
     CreatePostUseCase,
@@ -27,6 +28,7 @@ const useCases = [
         CqrsModule,
         forwardRef(() => BlogsModule),
         forwardRef(() => CommentsModule),
+        LikesModule
     ],
     controllers: [PostsController],
     providers: [PostsRepository, PostsQueryRepository, ...useCases],

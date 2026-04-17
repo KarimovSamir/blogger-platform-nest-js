@@ -1,19 +1,25 @@
-import { Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Comment, CommentSchema } from "./domain/comment.entity";
 import { CommentsController } from "./api/comments.controller";
 import { CommentsRepository } from "./infrastructure/comments.repository";
 import { CommentsQueryRepository } from "./infrastructure/query/comments.query-repository";
 import { CreateCommentUseCase } from "./application/use-cases/create-comments.use-case";
-import { UpdateBlogUseCase } from "../blogs/application/use-cases/update-blog.use-case";
-import { DeleteBlogUseCase } from "../blogs/application/use-cases/delete-blog.use-case";
 import { UpdateCommentLikeStatusUseCase } from "./application/use-cases/update-comment-like-status.use-case";
+import { UpdateCommentUseCase } from "./application/use-cases/update-comments.use-case";
+import { DeleteCommentUseCase } from "./application/use-cases/delete-comments.use-case";
+import { LikesModule } from "../likes/likes.module";
+import { CqrsModule } from "@nestjs/cqrs";
+import { PostsModule } from "../posts/posts.module";
 
-const useCases = [CreateCommentUseCase, UpdateBlogUseCase, DeleteBlogUseCase, UpdateCommentLikeStatusUseCase];
+const useCases = [CreateCommentUseCase, UpdateCommentUseCase, DeleteCommentUseCase, UpdateCommentLikeStatusUseCase];
 
 @Module({
     imports: [
+        CqrsModule,
         MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
+        forwardRef(() => PostsModule),
+        LikesModule
     ],
     controllers: [CommentsController],
     providers: [
@@ -23,4 +29,4 @@ const useCases = [CreateCommentUseCase, UpdateBlogUseCase, DeleteBlogUseCase, Up
     ],
     exports: [CommentsQueryRepository],
 })
-export class CommentsModule {}
+export class CommentsModule { }
