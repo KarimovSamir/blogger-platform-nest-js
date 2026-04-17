@@ -16,13 +16,17 @@ export class CommentsController {
     constructor(
         private readonly commandBus: CommandBus,
         private readonly commentsQueryRepository: CommentsQueryRepository,
-    ) {}
+    ) { }
 
     @UseGuards(JwtOptionalAuthGuard)
     @Get(':id')
-    async getComment(@Param('id') id: string): Promise<CommentViewDto> {
-        return this.commentsQueryRepository.getByIdOrNotFoundFail(id);
+    async getComment(
+        @Param('id') id: string,
+        @Request() req: any, 
+    ): Promise<CommentViewDto> {
+        return this.commentsQueryRepository.getByIdOrNotFoundFail(id, req.user?.userId); 
     }
+
 
     @UseGuards(JwtAuthGuard)
     @Put(':commentId')
@@ -34,7 +38,7 @@ export class CommentsController {
     ) {
         // Достаем ID юзера из payload токена
         const userId = req.user.userId;
-        
+
         await this.commandBus.execute(new UpdateCommentCommand(commentId, userId, dto));
     }
 
