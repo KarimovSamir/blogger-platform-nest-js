@@ -14,7 +14,7 @@ export class CommentViewDto {
         myStatus: string;
     };
 
-    static mapToView(comment: CommentDocument): CommentViewDto {
+    static mapToView(comment: CommentDocument, myStatus: string = 'None'): CommentViewDto {
         return {
             id: comment._id.toString(),
             content: comment.content,
@@ -26,8 +26,9 @@ export class CommentViewDto {
             likesInfo: {
                 likesCount: comment.likesInfo.likesCount,
                 dislikesCount: comment.likesInfo.dislikesCount,
-                myStatus: 'None',
+                myStatus,
             },
         };
     }
+
 }

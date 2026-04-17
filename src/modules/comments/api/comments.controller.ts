@@ -8,7 +8,7 @@ import { DeleteCommentCommand } from "../application/use-cases/delete-comments.u
 import { CommentInputDto } from "./input-dto/comment.input-dto";
 import { LikeInputDto } from "../../likes/api/input-dto/like.input-dto";
 import { UpdateCommentLikeStatusCommand } from "../application/use-cases/update-comment-like-status.use-case";
-
+import { JwtOptionalAuthGuard } from '../../auth/guards/jwt/jwt-optional-auth.guard';
 
 
 @Controller('comments')
@@ -18,7 +18,7 @@ export class CommentsController {
         private readonly commentsQueryRepository: CommentsQueryRepository,
     ) {}
 
-    // GET остается публичным (или опционально авторизованным, если нужны лайки, но пока так)
+    @UseGuards(JwtOptionalAuthGuard)
     @Get(':id')
     async getComment(@Param('id') id: string): Promise<CommentViewDto> {
         return this.commentsQueryRepository.getByIdOrNotFoundFail(id);

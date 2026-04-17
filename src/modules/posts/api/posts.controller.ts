@@ -60,13 +60,15 @@ export class PostsController {
         return this.postsQueryRepository.getByIdOrNotFoundFail(id, userId);
     }
 
+    @UseGuards(JwtOptionalAuthGuard)
     @Get(':postId/comments')
     async getCommentsForPost(
         @Param('postId') postId: string,
         @Query() query: CommentQueryDto,
+        @Request() req: any,
     ) {
         await this.postsQueryRepository.getByIdOrNotFoundFail(postId);
-        return this.commentsQueryRepository.getAllByPostId(postId, query);
+        return this.commentsQueryRepository.getAllByPostId(postId, query, req.user?.userId);
     }
 
     @UseGuards(BasicAuthGuard)
