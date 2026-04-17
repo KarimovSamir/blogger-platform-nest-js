@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
 import { BlogsQueryRepository } from "../infrastructure/query/blogs.query-repository";
 import { BlogQueryDto } from "./input-dto/get-blogs-query-params.input-dto";
 import { CreateBlogDto } from "./input-dto/create-blog.input-dto";
@@ -13,6 +13,7 @@ import { CreateBlogCommand } from "../application/use-cases/create-blog.use-case
 import { UpdateBlogCommand } from "../application/use-cases/update-blog.use-case";
 import { DeleteBlogCommand } from "../application/use-cases/delete-blog.use-case";
 import { CreatePostForBlogCommand } from "../../posts/application/use-cases/create-post-for-blog.use-case";
+import { BasicAuthGuard } from "../../auth/guards/basic/basic-auth.guard";
 
 // @Query() вытаскивает данные после ? (например, ?page=1)
 // @Body() вытаскивает тело POST-запроса (req.body)
@@ -48,6 +49,7 @@ export class BlogsController {
         return this.postsQueryRepository.getAllByBlogId(blogId, query);
     }
 
+    @UseGuards(BasicAuthGuard)
     @Post(':blogId/posts')
     async createPostForBlog(
         @Param('blogId') blogId: string, 
@@ -57,6 +59,7 @@ export class BlogsController {
         return this.postsQueryRepository.getByIdOrNotFoundFail(createdPostId);
     }
 
+    @UseGuards(BasicAuthGuard)
     @Post()
     async create(@Body() createBlogDto: CreateBlogDto) {
         // Создаём сущность через UseCase и получаем айди
@@ -65,6 +68,7 @@ export class BlogsController {
         return this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
     }
 
+    @UseGuards(BasicAuthGuard)
     @Put(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     async update(
@@ -74,6 +78,7 @@ export class BlogsController {
         await this.commandBus.execute(new UpdateBlogCommand(id, updateBlogDto));
     }
 
+    @UseGuards(BasicAuthGuard)
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     async remove(@Param('id') id: string) {

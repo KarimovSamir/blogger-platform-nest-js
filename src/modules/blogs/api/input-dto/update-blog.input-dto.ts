@@ -17,6 +17,6 @@ export class UpdateBlogDto {
     @IsNotEmpty()
     @MinLength(2)
     @MaxLength(100)
-    // @IsUrl()
+    @IsUrl({ require_protocol: true })
     websiteUrl: string;
 }

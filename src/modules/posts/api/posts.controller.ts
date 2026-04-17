@@ -27,6 +27,7 @@ import { UpdatePostCommand } from '../application/use-cases/update-post.use-case
 import { UpdatePostLikeStatusCommand } from '../application/use-cases/update-post-like-status.use-case';
 import { JwtAuthGuard } from '../../auth/guards/jwt/jwt-auth.guard';
 import { LikeInputDto } from '../../likes/api/input-dto/like.input-dto';
+import { BasicAuthGuard } from '../../auth/guards/basic/basic-auth.guard';
 
 @Controller('posts')
 export class PostsController {
@@ -48,6 +49,7 @@ export class PostsController {
         return this.postsQueryRepository.getByIdOrNotFoundFail(id);
     }
 
+    @UseGuards(JwtAuthGuard)
     @Get(':postId/comments')
     async getCommentsForPost(
         @Param('postId') postId: string,
@@ -57,6 +59,7 @@ export class PostsController {
         return this.commentsQueryRepository.getAllByPostId(postId, query);
     }
 
+    @UseGuards(BasicAuthGuard)
     @Post()
     async create(@Body() dto: CreatePostInputDto): Promise<PostViewDto> {
         const postId = await this.commandBus.execute(
@@ -87,6 +90,7 @@ export class PostsController {
         );
     }
 
+    @UseGuards(BasicAuthGuard)
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     async delete(@Param('id') id: string) {

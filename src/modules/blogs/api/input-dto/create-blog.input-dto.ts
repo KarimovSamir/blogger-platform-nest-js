@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsNotEmpty, IsString, IsUrl, MaxLength, MinLength } from 'class-validator';
 
 export class CreateBlogDto {
     @IsString()
@@ -17,6 +17,6 @@ export class CreateBlogDto {
     @IsNotEmpty()
     @MinLength(2)
     @MaxLength(100)
-    // @IsUrl()
+    @IsUrl({ require_protocol: true })
     websiteUrl: string;
 }
