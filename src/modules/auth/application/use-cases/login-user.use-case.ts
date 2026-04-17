@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
 export class LoginUserCommand {
-    constructor(public userId: string) {}
+    constructor(public userId: string, public login: string) {}
 }
 
 @CommandHandler(LoginUserCommand)
@@ -15,7 +15,7 @@ export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
 
     async execute(command: LoginUserCommand): Promise<{ accessToken: string, refreshToken: string }> {
         // 1. Достаем userId из команды! <-- ИСПРАВЛЕНИЕ ЗДЕСЬ
-        const { userId } = command; 
+        const { userId, login } = command; 
 
         // 2. Достаем секреты
         const acSecret = this.configService.getOrThrow<string>('AC_SECRET');
@@ -27,7 +27,7 @@ export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
 
         // 4. Генерируем Access Token (теперь userId доступен)
         const accessToken = await this.jwtService.signAsync(
-            { userId: userId }, 
+            { userId, login },
             { secret: acSecret, expiresIn: acTime }
         );
 

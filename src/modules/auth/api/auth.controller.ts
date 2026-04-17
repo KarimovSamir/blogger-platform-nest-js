@@ -61,9 +61,10 @@ export class AuthController {
     ) {
         // req.user.id приходит из LocalStrategy -> validate
         const userId = req.user.id;
+        const login = req.user.login; 
 
         const tokens = await this.commandBus.execute(
-            new LoginUserCommand(userId),
+            new LoginUserCommand(userId, login),
         );
 
         res.cookie('refreshToken', tokens.refreshToken, {

@@ -20,6 +20,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     // В аргумент payload упадет то, что мы зашифровали в JwtService ({ userId: string })
     async validate(payload: any) {
         // То, что мы возвращаем здесь, NestJS положит в req.user
-        return { userId: payload.userId };
+        return { userId: payload.userId, login: payload.login };
     }
 }
