@@ -47,6 +47,7 @@ export class Blog {
 }
 
 export const BlogSсhema = SchemaFactory.createForClass(Blog);
+// это магия Mongoose, которая делает методы класса доступными и как статические (для createInstance), и как instance-методы (для updateActivity). Без этой строчки фабричный метод не будет работать через модель.
 BlogSсhema.loadClass(Blog);
 
 export type BlogDocument = HydratedDocument<Blog>;
