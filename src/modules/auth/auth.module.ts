@@ -24,6 +24,8 @@ import { JwtRefreshStrategy } from './guards/jwt/jwt-refresh.strategy';
 import { RefreshTokenUseCase } from './application/use-cases/refresh-token.use-case';
 import { LogoutUseCase } from './application/use-cases/logout.use-case';
 import { JwtTokensService } from '../../core/adapters/jwt-tokens.service';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Device, DeviceSchema } from '../security-devices/domain/device.entity';
 
 const useCases = [
     LoginUserUseCase,
@@ -43,6 +45,7 @@ const useCases = [
         PassportModule,
         JwtModule.register({}), // Базовый модуль JWT
         SecurityDevicesModule,
+        MongooseModule.forFeature([{ name: Device.name, schema: DeviceSchema }]),
     ],
     controllers: [
         AuthController,
