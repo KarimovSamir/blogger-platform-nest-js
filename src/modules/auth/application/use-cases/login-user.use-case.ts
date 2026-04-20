@@ -1,41 +1,61 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
+import { v4 as uuidv4 } from 'uuid';
+import { JwtTokensService } from '../../infrastructure/jwt-tokens.service';
+import { SecurityDevicesRepository } from '../../../security-devices/infrastructure/security-devices.repository';
+import { Device } from '../../../security-devices/domain/device.entity';
 
+// Команда теперь несёт ещё и метаданные запроса — ip и userAgent, 
+// чтобы записать сессию устройства в БД.
 export class LoginUserCommand {
-    constructor(public userId: string, public login: string) {}
+    constructor(
+        public userId: string,
+        public login: string,
+        public ip: string,
+        public userAgent: string,
+    ) {}
+}
+
+export interface LoginResult {
+    accessToken: string;
+    refreshToken: string;
 }
 
 @CommandHandler(LoginUserCommand)
-export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
+export class LoginUserUseCase implements ICommandHandler<LoginUserCommand, LoginResult> {
     constructor(
-        private jwtService: JwtService, 
-        private configService: ConfigService
+        private readonly jwtTokensService: JwtTokensService,
+        private readonly securityDevicesRepository: SecurityDevicesRepository,
     ) {}
 
-    async execute(command: LoginUserCommand): Promise<{ accessToken: string, refreshToken: string }> {
-        // 1. Достаем userId из команды! <-- ИСПРАВЛЕНИЕ ЗДЕСЬ
-        const { userId, login } = command; 
+    async execute(command: LoginUserCommand): Promise<LoginResult> {
+        const { userId, login, ip, userAgent } = command;
 
-        // 2. Достаем секреты
-        const acSecret = this.configService.getOrThrow<string>('AC_SECRET');
-        const rtSecret = this.configService.getOrThrow<string>('RT_SECRET');
+        // каждый логин = новая сессия
+        const deviceId = uuidv4();
 
-        // 3. Достаем время и переводим в число
-        const acTime = parseInt(this.configService.getOrThrow<string>('AC_TIME'), 10);
-        const rtTime = parseInt(this.configService.getOrThrow<string>('RT_TIME'), 10);
+        // Выпускаем refresh-токен. decoded.iat нужен, чтобы
+        // lastActiveDate в БД совпал с iat токена — это основа
+        // всей проверки "токен актуален / устарел" в JwtRefreshStrategy.
+        const { token: refreshToken, decoded } =
+            this.jwtTokensService.createRefreshToken({ userId, deviceId });
 
-        // 4. Генерируем Access Token (теперь userId доступен)
-        const accessToken = await this.jwtService.signAsync(
-            { userId, login },
-            { secret: acSecret, expiresIn: acTime }
-        );
+        // Создаём запись сессии.
+        // lastActiveDate — ISO-строка, полученная из iat.
+        // expireAt — Date из exp, на будущее (можно повесить TTL-индекс Mongo
+        // для автоочистки просроченных сессий).
+        const device = Device.createInstance({
+            userId,
+            deviceId,
+            ip,
+            title: userAgent,
+            lastActiveDate: new Date(decoded.iat * 1000).toISOString(),
+            expireAt: new Date(decoded.exp * 1000),
+        });
 
-        // 5. Генерируем Refresh Token
-        const refreshToken = await this.jwtService.signAsync(
-            { userId: userId, deviceId: "some-device-id" }, 
-            { secret: rtSecret, expiresIn: rtTime }
-        );
+        await this.securityDevicesRepository.save(device);
+
+        // Access-токен отдельно. Он stateless, в БД про него ничего не пишем.
+        const accessToken = this.jwtTokensService.createAccessToken({ userId, login });
 
         return { accessToken, refreshToken };
     }

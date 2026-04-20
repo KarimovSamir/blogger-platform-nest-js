@@ -3,23 +3,21 @@ export const SETTINGS = {
     ADMIN_PASSWORD: "qwerty",
     PORT: process.env.PORT || 5001,
     MONGO_URL:
-        process.env.MONGO_URL || "mongodb://localhost:27017/instaCloneApp",
-    DB_NAME: process.env.DB_NAME || "blogger-platform-nestjs",
+        process.env.MONGO_URL,
+    DB_NAME: process.env.DB_NAME,
     // Access token
-    AC_SECRET: process.env.AC_SECRET || "gkflgkfkgjdlfgjvf",
-    AC_TIME: Number(process.env.AC_TIME) || 300,
+    AC_SECRET: process.env.AC_SECRET || '',
+    AC_TIME: Number(process.env.AC_TIME),
     // Refresh token
-    RT_SECRET: process.env.RT_SECRET || "hdyslbncywbq",
-    RT_TIME: Number(process.env.RT_TIME) || 600,
+    RT_SECRET: process.env.RT_SECRET || '',
+    RT_TIME: Number(process.env.RT_TIME),
 
-    RESEND_API_KEY: process.env.RESEND_API_KEY || "",
-    MAIL_FROM: process.env.MAIL_FROM || "No Reply <no-reply@mydigitalhome.me>",
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    MAIL_FROM: process.env.MAIL_FROM,
     FRONTEND_CONFIRM_URL:
-        process.env.FRONTEND_CONFIRM_URL ||
-        "https://blogger-platform-nest-js.vercel.app/registration-confirmation",
+        process.env.FRONTEND_CONFIRM_URL,
     FRONTEND_RECOVERY_CODE_URL:
-        process.env.FRONTEND_RECOVERY_CODE_URL ||
-        "https://blogger-platform-nest-js.vercel.app/password-recovery",
+        process.env.FRONTEND_RECOVERY_CODE_URL,
     APP_BASE_URL:
-        process.env.APP_BASE_URL || "https://blogger-platform-nest-js.vercel.app",
+        process.env.APP_BASE_URL,
 };

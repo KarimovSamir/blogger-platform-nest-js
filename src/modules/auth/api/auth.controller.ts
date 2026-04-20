@@ -22,13 +22,16 @@ import { ConfirmEmailCommand } from '../application/use-cases/confirm-email.use-
 import { ResendEmailCommand } from '../application/use-cases/resend-email.use-case';
 import { PasswordRecoveryCommand } from '../application/use-cases/password-recovery.use-case';
 import { NewPasswordCommand } from '../application/use-cases/new-password.use-case';
+import { JwtRefreshAuthGuard } from '../guards/jwt/jwt-refresh-auth.guard';
+import { RefreshTokenCommand } from '../application/use-cases/refresh-token.use-case';
+import { LogoutCommand } from '../application/use-cases/logout.use-case';
 
 @Controller('auth')
 export class AuthController {
     constructor(
         private readonly usersRepository: UsersRepository,
         private readonly commandBus: CommandBus,
-    ) {}
+    ) { }
 
     @Post('registration')
     @HttpCode(HttpStatus.NO_CONTENT)
@@ -59,17 +62,21 @@ export class AuthController {
         @Request() req: any,
         @Res({ passthrough: true }) res: Response,
     ) {
-        // req.user.id приходит из LocalStrategy -> validate
         const userId = req.user.id;
-        const login = req.user.login; 
+        const login = req.user.login;
+
+        // Достаём метаданные соединения.
+        // req.ip может прийти как '::ffff:127.0.0.1' — это нормально (IPv4 внутри IPv6).
+        const ip = req.ip || req.socket?.remoteAddress || 'unknown';
+        const userAgent = req.headers['user-agent'] || 'unknown';
 
         const tokens = await this.commandBus.execute(
-            new LoginUserCommand(userId, login),
+            new LoginUserCommand(userId, login, ip, userAgent),
         );
 
         res.cookie('refreshToken', tokens.refreshToken, {
             httpOnly: true,
-            secure: true, 
+            secure: true,
         });
 
         return { accessToken: tokens.accessToken };
@@ -87,12 +94,60 @@ export class AuthController {
         await this.commandBus.execute(new NewPasswordCommand(dto));
     }
 
+    @UseGuards(JwtRefreshAuthGuard)
+    @Post('refresh-token')
+    @HttpCode(HttpStatus.OK)
+    async refreshToken(
+        @Request() req: any,
+        @Res({ passthrough: true }) res: Response,
+    ) {
+        // req.user положила сюда JwtRefreshStrategy.validate().
+        // Там была проверка и подписи, и срока, и актуальности через lastActiveDate.
+        const userId = req.user.userId;
+        const deviceId = req.user.deviceId;
+
+        const ip = req.ip || req.socket?.remoteAddress || 'unknown';
+        const userAgent = req.headers['user-agent'] || 'unknown';
+
+        const tokens = await this.commandBus.execute(
+            new RefreshTokenCommand(userId, deviceId, ip, userAgent),
+        );
+
+        // Перезаписываем куку новым refresh-токеном.
+        res.cookie('refreshToken', tokens.refreshToken, {
+            httpOnly: true,
+            secure: true,
+        });
+
+        return { accessToken: tokens.accessToken };
+    }
+
+    @UseGuards(JwtRefreshAuthGuard)
+    @Post('logout')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async logout(
+        @Request() req: any,
+        @Res({ passthrough: true }) res: Response,
+    ) {
+        const deviceId = req.user.deviceId;
+
+        await this.commandBus.execute(new LogoutCommand(deviceId));
+
+        // Чистим куку на стороне клиента.
+        // Флаги должны совпадать с теми, что были при res.cookie() —
+        // иначе браузер не поймёт, какую именно куку ты хочешь удалить.
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            secure: true,
+        });
+    }
+
     @UseGuards(JwtAuthGuard)
     @Get('me')
     async me(@Request() req: any) {
         // Зависит от того, как ты парсишь токен в JwtStrategy.
         // Обычно там кладут req.user.userId или req.user.id
-        const userId = req.user.userId || req.user.id; 
+        const userId = req.user.userId || req.user.id;
         const user = await this.usersRepository.findById(userId);
 
         if (!user) {

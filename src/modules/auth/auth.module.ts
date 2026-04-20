@@ -19,6 +19,11 @@ import { ConfirmEmailUseCase } from './application/use-cases/confirm-email.use-c
 import { ResendEmailUseCase } from './application/use-cases/resend-email.use-case';
 import { PasswordRecoveryUseCase } from './application/use-cases/password-recovery.use-case';
 import { NewPasswordUseCase } from './application/use-cases/new-password.use-case';
+import { SecurityDevicesModule } from '../security-devices/security-devices.module';
+import { JwtRefreshStrategy } from './guards/jwt/jwt-refresh.strategy';
+import { RefreshTokenUseCase } from './application/use-cases/refresh-token.use-case';
+import { LogoutUseCase } from './application/use-cases/logout.use-case';
+import { JwtTokensService } from '../../core/adapters/jwt-tokens.service';
 
 const useCases = [
     LoginUserUseCase,
@@ -26,7 +31,9 @@ const useCases = [
     ConfirmEmailUseCase,
     ResendEmailUseCase,
     PasswordRecoveryUseCase,
-    NewPasswordUseCase
+    NewPasswordUseCase,
+    RefreshTokenUseCase,
+    LogoutUseCase
 ];
 
 @Module({
@@ -35,6 +42,7 @@ const useCases = [
         CqrsModule, 
         PassportModule,
         JwtModule.register({}), // Базовый модуль JWT
+        SecurityDevicesModule,
     ],
     controllers: [
         AuthController,
@@ -44,6 +52,8 @@ const useCases = [
         JwtStrategy,
         BcryptService,
         MailerService,
+        JwtRefreshStrategy,
+        JwtTokensService,
         ...useCases, // Разворачиваем все юзкейсы
     ],
 })
