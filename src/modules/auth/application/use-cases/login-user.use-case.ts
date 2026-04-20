@@ -1,8 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { v4 as uuidv4 } from 'uuid';
-import { JwtTokensService } from '../../infrastructure/jwt-tokens.service';
 import { SecurityDevicesRepository } from '../../../security-devices/infrastructure/security-devices.repository';
 import { Device } from '../../../security-devices/domain/device.entity';
+import { JwtTokensService } from '../../../../core/adapters/jwt-tokens.service';
 
 // Команда теперь несёт ещё и метаданные запроса — ip и userAgent, 
 // чтобы записать сессию устройства в БД.
