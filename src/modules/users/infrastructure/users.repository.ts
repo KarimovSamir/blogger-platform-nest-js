@@ -12,7 +12,7 @@ export class UsersRepository {
     // Можно использовать если отсутствие юзера - не проблема
     async findById(id: string): Promise<User | null> {
         const result = await this.dataSource.query(
-            `SELECT * FROM users WHERE id = $1 AND deleted_at IS NULL`,
+            `SELECT * FROM users WHERE id = $1 AND "deletedAt" IS NULL`,
             [id],
         );
         // query всегда возвращает массив, берём первый элемент или null
@@ -33,7 +33,7 @@ export class UsersRepository {
         const result = await this.dataSource.query(
             `SELECT * FROM users 
              WHERE (login = $1 OR email = $2) 
-             AND deleted_at IS NULL`,
+             AND "deletedAt" IS NULL`,
             [login, email],
         );
         return result[0] ?? null;
@@ -42,8 +42,8 @@ export class UsersRepository {
     async findByConfirmationCode(confirmationCode: string): Promise<User | null> {
         const result = await this.dataSource.query(
             `SELECT * FROM users 
-             WHERE email_confirmation_code = $1 
-             AND deleted_at IS NULL`,
+             WHERE "emailConfirmation_confirmationCode" = $1 
+             AND "deletedAt" IS NULL`,
             [confirmationCode],
         );
         return result[0] ?? null;
@@ -52,8 +52,8 @@ export class UsersRepository {
     async findByPasswordRecoveryCode(recoveryCode: string): Promise<User | null> {
         const result = await this.dataSource.query(
             `SELECT * FROM users 
-             WHERE password_recovery_code = $1 
-             AND deleted_at IS NULL`,
+             WHERE "passwordRecovery_recoveryCode" = $1 
+             AND "deletedAt" IS NULL`,
             [recoveryCode],
         );
         return result[0] ?? null;
@@ -68,16 +68,16 @@ export class UsersRepository {
                 `INSERT INTO users (
                     login,
                     email,
-                    password_hash,
-                    is_email_confirmed,
-                    email_confirmation_code,
-                    email_confirmation_expiration_date,
-                    email_confirmation_is_confirmed,
-                    password_recovery_code,
-                    password_recovery_expiration_date,
-                    deleted_at,
-                    created_at,
-                    updated_at
+                    "passwordHash",
+                    "isEmailConfirmed",
+                    "emailConfirmation_confirmationCode",
+                    "emailConfirmation_expirationDate",
+                    "emailConfirmation_isConfirmed",
+                    "passwordRecovery_recoveryCode",
+                    "passwordRecovery_expirationDate",
+                    "deletedAt",
+                    "createdAt",
+                    "updatedAt"
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())
                 RETURNING *`,
                 [
@@ -100,15 +100,15 @@ export class UsersRepository {
                 `UPDATE users SET
                     login = $1,
                     email = $2,
-                    password_hash = $3,
-                    is_email_confirmed = $4,
-                    email_confirmation_code = $5,
-                    email_confirmation_expiration_date = $6,
-                    email_confirmation_is_confirmed = $7,
-                    password_recovery_code = $8,
-                    password_recovery_expiration_date = $9,
-                    deleted_at = $10,
-                    updated_at = NOW()
+                    "passwordHash" = $3,
+                    "isEmailConfirmed" = $4,
+                    "emailConfirmation_confirmationCode" = $5,
+                    "emailConfirmation_expirationDate" = $6,
+                    "emailConfirmation_isConfirmed" = $7,
+                    "passwordRecovery_recoveryCode" = $8,
+                    "passwordRecovery_expirationDate" = $9,
+                    "deletedAt" = $10,
+                    "updatedAt" = NOW()
                 WHERE id = $11
                 RETURNING *`,
                 [

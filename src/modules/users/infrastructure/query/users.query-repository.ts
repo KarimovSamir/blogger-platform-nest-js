@@ -13,7 +13,7 @@ export class UsersQueryRepository {
     // Метод ищет юзера и сразу возвращает отформатированный ViewDto
     async getByIdOrNotFoundFail(id: string): Promise<UserViewDto> {
         const result = await this.dataSource.query(
-            `SELECT * FROM users WHERE id = $1 AND deleted_at IS NULL`,
+            `SELECT * FROM users WHERE id = $1 AND "deletedAt" IS NULL`,
             [id],
         );
         if (!result[0]) {
@@ -25,7 +25,7 @@ export class UsersQueryRepository {
     async getAll(query: UserQueryDto): Promise<PaginatedViewDto<UserViewDto[]>> {
         // Собираем условия фильтрации динамически.
         // В Mongoose это был объект filter с $or, здесь — массив WHERE-условий и параметров.
-        const conditions: string[] = ['deleted_at IS NULL'];
+        const conditions: string[] = ['"deletedAt" IS NULL'];
         const params: any[] = [];
 
         if (query.searchLoginTerm) {
@@ -42,16 +42,16 @@ export class UsersQueryRepository {
         // Если оба условия поиска заданы — они должны работать через OR, как в Mongoose
         const whereClause =
             query.searchLoginTerm && query.searchEmailTerm
-                ? `deleted_at IS NULL AND (login ILIKE $1 OR email ILIKE $2)`
+                ? `"deletedAt" IS NULL AND (login ILIKE $1 OR email ILIKE $2)`
                 : conditions.join(' AND ');
 
         // Белый список колонок для сортировки — защита от SQL-инъекций через sortBy
         const allowedSortFields: Record<string, string> = {
             login: 'login',
             email: 'email',
-            createdAt: 'created_at',
+            createdAt: '"createdAt"',
         };
-        const sortColumn = allowedSortFields[query.sortBy as string] ?? 'created_at';
+        const sortColumn = allowedSortFields[query.sortBy as string] ?? '"createdAt"';
         const sortDir = query.sortDirection === 'asc' ? 'ASC' : 'DESC';
 
         // Добавляем LIMIT и OFFSET в конец массива параметров
