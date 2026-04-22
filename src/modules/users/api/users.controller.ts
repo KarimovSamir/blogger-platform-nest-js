@@ -30,7 +30,7 @@ import { DeleteUserCommand } from '../application/use-cases/delete-user.use-case
 
 // вешаем на все эндпоинты в этом контроллере
 @UseGuards(BasicAuthGuard)
-@Controller('users')
+@Controller('sa/users')
 export class UsersController {
     constructor(
         private readonly commandBus: CommandBus,
