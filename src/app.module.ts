@@ -46,7 +46,7 @@ import { SETTINGS } from './core/settings/settings';
         //
         // ttl в миллисекундах (не в секундах — частая ловушка).
         // limit — максимум запросов в окне.
-        
+         
         // ThrottlerModule.forRoot([
         //     {
         //         ttl: 10_000, // 10 секунд
