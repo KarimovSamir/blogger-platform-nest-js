@@ -48,6 +48,7 @@ export class User {
             expirationDate: null,
         };
 
+        user.deletedAt = null;
         // id не задаём — PostgreSQL сгенерирует его сам при INSERT
         return user;
     }
