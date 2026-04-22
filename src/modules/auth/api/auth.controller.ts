@@ -4,7 +4,7 @@ import {
 import { CommandBus } from '@nestjs/cqrs';
 import type { Response } from 'express';
 // это ограничитель на количество запросов от одного источника за единицу времени (rate limit)
-import { ThrottlerGuard } from '@nestjs/throttler';
+// import { ThrottlerGuard } from '@nestjs/throttler';
 
 import { UsersRepository } from '../../users/infrastructure/users.repository';
 import { LocalAuthGuard } from '../guards/local/local-auth.guard';
@@ -33,14 +33,14 @@ export class AuthController {
         private readonly commandBus: CommandBus,
     ) { }
 
-    @UseGuards(ThrottlerGuard)
+    // @UseGuards(ThrottlerGuard)
     @Post('registration')
     @HttpCode(HttpStatus.NO_CONTENT)
     async registration(@Body() dto: RegistrationAuthDto) {
         await this.commandBus.execute(new RegisterUserCommand(dto));
     }
 
-    @UseGuards(ThrottlerGuard)
+    // @UseGuards(ThrottlerGuard)
     @Post('registration-confirmation')
     @HttpCode(HttpStatus.NO_CONTENT)
     async registrationConfirmation(
@@ -49,7 +49,7 @@ export class AuthController {
         await this.commandBus.execute(new ConfirmEmailCommand(dto.code));
     }
 
-    @UseGuards(ThrottlerGuard)
+    // @UseGuards(ThrottlerGuard)
     @Post('registration-email-resending')
     @HttpCode(HttpStatus.NO_CONTENT)
     async registrationEmailResending(
@@ -58,7 +58,8 @@ export class AuthController {
         await this.commandBus.execute(new ResendEmailCommand(dto.email));
     }
 
-    @UseGuards(ThrottlerGuard, LocalAuthGuard)
+    // @UseGuards(ThrottlerGuard)
+    @UseGuards(LocalAuthGuard)
     @Post('login')
     @HttpCode(HttpStatus.OK)
     async login(
@@ -85,14 +86,14 @@ export class AuthController {
         return { accessToken: tokens.accessToken };
     }
 
-    @UseGuards(ThrottlerGuard)
+    // @UseGuards(ThrottlerGuard)
     @Post('password-recovery')
     @HttpCode(HttpStatus.NO_CONTENT)
     async passwordRecovery(@Body() dto: PasswordRecoveryAuthDto) {
         await this.commandBus.execute(new PasswordRecoveryCommand(dto.email));
     }
 
-    @UseGuards(ThrottlerGuard)
+    // @UseGuards(ThrottlerGuard)
     @Post('new-password')
     @HttpCode(HttpStatus.NO_CONTENT)
     async newPassword(@Body() dto: NewEmailPasswordRecoveryAttributes) {
@@ -162,7 +163,7 @@ export class AuthController {
         return {
             email: user.email,
             login: user.login,
-            userId: user._id.toString(),
+            userId: user.id,
         };
     }
 }

@@ -20,4 +20,5 @@ export const SETTINGS = {
         process.env.FRONTEND_RECOVERY_CODE_URL || '',
     APP_BASE_URL:
         process.env.APP_BASE_URL || '',
+    PG_URL: process.env.PG_URL || 'postgresql://neondb_owner:npg_jcxU63FBomZO@ep-gentle-thunder-alnis3ym-pooler.c-3.eu-central-1.aws.neon.tech/neondb?sslmode=require',
 };

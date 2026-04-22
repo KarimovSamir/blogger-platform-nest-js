@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Request } from 'express';
-import { SETTINGS } from '../../../../core/settings/settings';
+import { ConfigService } from '@nestjs/config';
 import { SecurityDevicesRepository } from '../../../security-devices/infrastructure/security-devices.repository';
 
 // Когда guard распакует токен, он передаст этот объект в validate() ниже.
@@ -22,12 +22,14 @@ export interface RefreshTokenUser {
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
-
     constructor(
         private readonly securityDevicesRepository: SecurityDevicesRepository,
+        // Используем ConfigService вместо SETTINGS — он читает .env уже после загрузки ConfigModule.
+        // SETTINGS читается в момент импорта файла, то есть до старта приложения — тогда process.env ещё пустой.
+        configService: ConfigService,
     ) {
         // вызов конструктора родительского класса (PassportStrategy) 
-        // при создании объекта класса JwtRefreshStrategy сначала вызывается super до конструкторв
+        // при создании объекта класса JwtRefreshStrategy сначала вызывается super до конструктора
         super({
             // Откуда доставать токен. Для refresh — из куки, не из заголовка.
             jwtFromRequest: ExtractJwt.fromExtractors([
@@ -35,7 +37,9 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
                     return req?.cookies?.refreshToken || null;
                 },
             ]),
-            secretOrKey: SETTINGS.RT_SECRET,
+            // ?? '' — гарантирует что тип будет string, а не string | undefined.
+            // TypeScript требует именно string, undefined не принимает.
+            secretOrKey: configService.get<string>('RT_SECRET') ?? '',
             // Если false — просроченный токен Passport сам отвергнет с 401.
             ignoreExpiration: false,
         });
@@ -51,11 +55,9 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
         const device = await this.securityDevicesRepository.findByDeviceId(
             payload.deviceId,
         );
-
         if (!device) {
             throw new UnauthorizedException();
         }
-
         // Проверяем актуальность токена через сравнение iat и lastActiveDate.
         //    iat в JWT — в секундах (Unix timestamp).
         //    lastActiveDate у нас — ISO-строка (так требует документация и swagger).
@@ -65,12 +67,10 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
         const sessionIatInSeconds = Math.floor(
             new Date(device.lastActiveDate).getTime() / 1000,
         );
-
         if (sessionIatInSeconds !== payload.iat) {
             // Токен подписан правильно и не просрочен, но он УЖЕ БЫЛ ИСПОЛЬЗОВАН
             throw new UnauthorizedException();
         }
-
         // Всё сошлось. Возвращаем объект — он станет req.user.
         // Возвращаем только то, что реально нужно контроллеру и use-case'ам.
         // Полный payload с iat/exp наружу не светим.

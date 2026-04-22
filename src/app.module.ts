@@ -13,6 +13,8 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { LikesModule } from './modules/likes/likes.module';
 import { SecurityDevicesModule } from './modules/security-devices/security-devices.module';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { SETTINGS } from './core/settings/settings';
 
 @Module({
     imports: [
@@ -22,6 +24,13 @@ import { ThrottlerModule } from '@nestjs/throttler';
         // NestJS сам установит и будет удерживать соединение
         MongooseModule.forRoot(process.env.MONGO_URL || ""),
         CqrsModule.forRoot(),
+        TypeOrmModule.forRoot({
+            type: 'postgres',
+            url: SETTINGS.PG_URL,
+            ssl: { rejectUnauthorized: false },
+            synchronize: false,
+            entities: [],
+        }),
         UsersModule,
         BlogsModule,
         PostsModule,
@@ -37,12 +46,13 @@ import { ThrottlerModule } from '@nestjs/throttler';
         //
         // ttl в миллисекундах (не в секундах — частая ловушка).
         // limit — максимум запросов в окне.
-        ThrottlerModule.forRoot([
-            {
-                ttl: 10_000, // 10 секунд
-                limit: 5,
-            },
-        ]),
+        
+        // ThrottlerModule.forRoot([
+        //     {
+        //         ttl: 10_000, // 10 секунд
+        //         limit: 5,
+        //     },
+        // ]),
     ],
     controllers: [AppController],
     providers: [AppService],

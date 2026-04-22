@@ -34,7 +34,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
         }
 
         // 3. Возвращаем бейджик, который упадет в req.user
-        return { id: user._id.toString(), login: user.login };
+        return { id: user.id, login: user.login };
 
     }
 }

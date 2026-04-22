@@ -1,4 +1,4 @@
-import { UserDocument } from "../../domain/user.entity";
+import { User } from "../../domain/user.entity";
 
 export class UserViewDto {
     id: string;
@@ -7,12 +7,12 @@ export class UserViewDto {
     createdAt: string;
 
     // маппер
-    static mapToView(user: UserDocument): UserViewDto {
+    static mapToView(user: User): UserViewDto {
         const dto = new UserViewDto();
-        dto.id = user._id.toString(); // возвращает ObjectId, нужна строка
+        dto.id = user.id
         dto.login = user.login;
         dto.email = user.email;
-        dto.createdAt = user.createdAt.toISOString();
+        dto.createdAt = new Date(user.createdAt).toISOString();
         return dto;
     }
 }

@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { CqrsModule } from '@nestjs/cqrs';
-import { User, UserSchema } from './domain/user.entity';
 import { UsersRepository } from './infrastructure/users.repository';
 import { UsersQueryRepository } from './infrastructure/query/users.query-repository';
 import { UsersController } from './api/users.controller';
@@ -10,6 +8,7 @@ import { BcryptService } from '../../core/adapters/bcrypt.service';
 import { CreateUserUseCase } from './application/use-cases/create-user.use-case';
 import { UpdateUserUseCase } from './application/use-cases/update-user.use-case';
 import { DeleteUserUseCase } from './application/use-cases/delete-user.use-case';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 const useCases = [CreateUserUseCase, UpdateUserUseCase, DeleteUserUseCase];
 
@@ -18,7 +17,7 @@ const useCases = [CreateUserUseCase, UpdateUserUseCase, DeleteUserUseCase];
     imports: [
         CqrsModule,
         // Динамически создаем мини-модуль, который регистрирует нашу схему в базе
-        MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+        TypeOrmModule.forFeature([]),
     ],
     // Кто принимает HTTP-запросы
     controllers: [UsersController],
@@ -29,6 +28,6 @@ const useCases = [CreateUserUseCase, UpdateUserUseCase, DeleteUserUseCase];
         BcryptService,
         ...useCases
     ],
-    exports: [UsersRepository, MongooseModule]
+    exports: [UsersRepository]
 })
 export class UsersModule { }
