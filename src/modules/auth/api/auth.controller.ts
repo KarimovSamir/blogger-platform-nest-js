@@ -59,8 +59,7 @@ export class AuthController {
         await this.commandBus.execute(new ResendEmailCommand(dto.email));
     }
 
-    @UseGuards(ThrottlerGuard)
-    @UseGuards(LocalAuthGuard)
+    @UseGuards(ThrottlerGuard, LocalAuthGuard)
     @Post('login')
     @HttpCode(HttpStatus.OK)
     async login(
