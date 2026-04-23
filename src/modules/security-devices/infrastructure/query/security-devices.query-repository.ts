@@ -1,18 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Device, type DeviceModelType } from '../../domain/device.entity';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { DeviceViewDto } from '../../api/view-dto/device.view-dto';
 
 @Injectable()
 export class SecurityDevicesQueryRepository {
-    constructor(
-        @InjectModel(Device.name) private DeviceModel: DeviceModelType,
-    ) { }
+    constructor(@InjectDataSource() private dataSource: DataSource) {}
 
     async findAllByUserId(userId: string): Promise<DeviceViewDto[]> {
-        const devices = await this.DeviceModel.find({ userId })
-            .sort({ lastActiveDate: -1 })
-            .exec();
+        const devices = await this.dataSource.query(
+            `SELECT * FROM devices WHERE "userId" = $1 ORDER BY "lastActiveDate" DESC`,
+            [userId],
+        );
 
         return devices.map(DeviceViewDto.mapToView);
     }

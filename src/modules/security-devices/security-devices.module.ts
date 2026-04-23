@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { CqrsModule } from '@nestjs/cqrs';
-import { Device, DeviceSchema } from './domain/device.entity';
 import { SecurityDevicesController } from './api/security-devices.controller';
 import { SecurityDevicesRepository } from './infrastructure/security-devices.repository';
 import { SecurityDevicesQueryRepository } from './infrastructure/query/security-devices.query-repository';
@@ -15,9 +14,7 @@ const useCases = [
 
 @Module({
     imports: [
-        MongooseModule.forFeature([
-            { name: Device.name, schema: DeviceSchema },
-        ]),
+        TypeOrmModule.forFeature([]),
         // чтобы работали @CommandHandler декораторы
         CqrsModule,
     ],
@@ -33,4 +30,4 @@ const useCases = [
         SecurityDevicesQueryRepository,
     ],
 })
-export class SecurityDevicesModule { }
+export class SecurityDevicesModule {}

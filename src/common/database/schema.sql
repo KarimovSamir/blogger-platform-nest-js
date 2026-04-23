@@ -2,14 +2,25 @@ CREATE TABLE IF NOT EXISTS users (
     id                                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     login                                 VARCHAR(10) NOT NULL UNIQUE,
     email                                 VARCHAR(255) NOT NULL UNIQUE,
-    password_hash                         VARCHAR(255) NOT NULL,
-    is_email_confirmed                    BOOLEAN NOT NULL DEFAULT FALSE,
-    email_confirmation_code               VARCHAR(255),
-    email_confirmation_expiration_date    TIMESTAMP,
-    email_confirmation_is_confirmed       BOOLEAN NOT NULL DEFAULT FALSE,
-    password_recovery_code                VARCHAR(255),
-    password_recovery_expiration_date     TIMESTAMP,
-    deleted_at                            TIMESTAMP,
-    created_at                            TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at                            TIMESTAMP NOT NULL DEFAULT NOW()
+    "passwordHash"                        VARCHAR(255) NOT NULL,
+    "isEmailConfirmed"                    BOOLEAN NOT NULL DEFAULT FALSE,
+    "emailConfirmation_confirmationCode"  VARCHAR(255),
+    "emailConfirmation_expirationDate"    TIMESTAMP,
+    "emailConfirmation_isConfirmed"       BOOLEAN NOT NULL DEFAULT FALSE,
+    "passwordRecovery_recoveryCode"       VARCHAR(255),
+    "passwordRecovery_expirationDate"     TIMESTAMP,
+    "deletedAt"                           TIMESTAMP,
+    "createdAt"                           TIMESTAMP NOT NULL DEFAULT NOW(),
+    "updatedAt"                           TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS devices (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    "userId"      UUID NOT NULL,
+    "deviceId"    UUID NOT NULL UNIQUE,
+    ip            VARCHAR(50) NOT NULL,
+    title         VARCHAR(255) NOT NULL,
+    "lastActiveDate" TIMESTAMP NOT NULL,
+    "expireAt"    TIMESTAMP NOT NULL,
+    "createdAt"   TIMESTAMP NOT NULL DEFAULT NOW()
 );
