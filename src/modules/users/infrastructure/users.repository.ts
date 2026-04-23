@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { User } from '../domain/user.entity';
+import { mapRowToUser } from './mappers/user.mapper';
 
 @Injectable()
 export class UsersRepository {
@@ -16,7 +17,7 @@ export class UsersRepository {
             [id],
         );
         // query всегда возвращает массив, берём первый элемент или null
-        return result[0] ?? null;
+        return result[0] ? mapRowToUser(result[0]) : null;
     }
 
     // Получаем объект или ошибку
@@ -36,7 +37,7 @@ export class UsersRepository {
              AND "deletedAt" IS NULL`,
             [login, email],
         );
-        return result[0] ?? null;
+        return result[0] ? mapRowToUser(result[0]) : null;
     }
 
     async findByConfirmationCode(confirmationCode: string): Promise<User | null> {
@@ -46,7 +47,7 @@ export class UsersRepository {
              AND "deletedAt" IS NULL`,
             [confirmationCode],
         );
-        return result[0] ?? null;
+        return result[0] ? mapRowToUser(result[0]) : null;
     }
 
     async findByPasswordRecoveryCode(recoveryCode: string): Promise<User | null> {
@@ -56,7 +57,7 @@ export class UsersRepository {
              AND "deletedAt" IS NULL`,
             [recoveryCode],
         );
-        return result[0] ?? null;
+        return result[0] ? mapRowToUser(result[0]) : null;
     }
 
     // В Mongoose был метод save() на документе — он сам понимал INSERT или UPDATE.
@@ -93,7 +94,7 @@ export class UsersRepository {
                     user.deletedAt,
                 ],
             );
-            return result[0];
+            return mapRowToUser(result[0]);
         } else {
             // UPDATE — если id есть, значит юзер уже существует в БД
             const result = await this.dataSource.query(
@@ -125,7 +126,7 @@ export class UsersRepository {
                     user.id,
                 ],
             );
-            return result[0];
+            return mapRowToUser(result[0]);
         }
     }
 }
