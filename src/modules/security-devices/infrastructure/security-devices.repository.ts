@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { Device } from '../domain/device.entity';
+import { mapRowToDevice } from './mappers/device.mapper';
 
 @Injectable()
 export class SecurityDevicesRepository {
@@ -14,7 +15,7 @@ export class SecurityDevicesRepository {
             [deviceId],
         );
         // query всегда возвращает массив, берём первый элемент или null
-        return result[0] ?? null;
+        return result[0] ? mapRowToDevice(result[0]) : null;
     }
 
     // В Mongoose был метод save() на документе — он сам понимал INSERT или UPDATE.
