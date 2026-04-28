@@ -74,9 +74,10 @@ export class PostsRepository {
                     post.id,
                 ],
             );
-            console.log('UPDATE result type:', JSON.stringify(result));
-
-            return mapRowToPost(result[0]);
+            // console.log('UPDATE result type:', JSON.stringify(result));
+            // TypeORM для UPDATE возвращает [rows[], count]
+            const row = Array.isArray(result[0]) ? result[0][0] : result[0];
+            return mapRowToPost(row);
         }
     }
 }

@@ -58,7 +58,8 @@ export class BlogsRepository {
                 RETURNING *`,
                 [blog.name, blog.description, blog.websiteUrl, blog.deletedAt, blog.id],
             );
-            return mapRowToBlog(result[0]);
+            const row = Array.isArray(result[0]) ? result[0][0] : result[0];
+            return mapRowToBlog(row);
         }
     }
 }
