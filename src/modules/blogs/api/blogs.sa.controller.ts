@@ -78,18 +78,16 @@ export class BlogsSAController {
         await this.commandBus.execute(new UpdateBlogCommand(id, updateBlogDto));
     }
 
-    @UseGuards(BasicAuthGuard)
     @Put(':blogId/posts/:postId')
     @HttpCode(HttpStatus.NO_CONTENT)
     async updatePostForBlog(
         @Param('blogId') blogId: string,
         @Param('postId') postId: string,
-        @Body() dto: UpdatePostInputDto,
+        @Body() dto: CreatePostForBlogDto,
     ) {
-        // По хорошему здесь нужна проверка что пост принадлежит блогу,
-        // но если хватит проверки на существование — достаточно UpdatePostCommand
         await this.commandBus.execute(new UpdatePostCommand(postId, { ...dto, blogId }));
     }
+
 
     @UseGuards(BasicAuthGuard)
     @Delete(':id')
