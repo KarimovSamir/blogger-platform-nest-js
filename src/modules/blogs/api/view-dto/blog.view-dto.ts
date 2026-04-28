@@ -1,4 +1,4 @@
-import { BlogDocument } from "../../domain/blog.entity";
+import { Blog } from "../../domain/blog.entity";
 
 export class BlogViewDto {
     id: string;
@@ -8,13 +8,16 @@ export class BlogViewDto {
     createdAt: string;
     isMembership: boolean;
 
-    static mapToView(blog: BlogDocument): BlogViewDto {
+    static mapToView(blog: any): BlogViewDto {
         const dto = new BlogViewDto();
-        dto.id = blog._id.toString(); // возвращает ObjectId, нужна строка
+        dto.id = blog.id;
         dto.name = blog.name;
         dto.description = blog.description;
         dto.websiteUrl = blog.websiteUrl;
-        dto.createdAt = blog.createdAt.toISOString();
+        // PostgreSQL возвращает TIMESTAMP как Date-объект
+        dto.createdAt = blog.createdAt instanceof Date
+            ? blog.createdAt.toISOString()
+            : blog.createdAt;
         dto.isMembership = blog.isMembership;
         return dto;
     }

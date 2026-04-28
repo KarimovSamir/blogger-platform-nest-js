@@ -24,3 +24,28 @@ CREATE TABLE IF NOT EXISTS devices (
     "expireAt"    TIMESTAMP NOT NULL,
     "createdAt"   TIMESTAMP NOT NULL DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS blogs (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name          VARCHAR(15) NOT NULL,
+    description   VARCHAR(500) NOT NULL,
+    "websiteUrl"  VARCHAR(100) NOT NULL,
+    "isMembership" BOOLEAN NOT NULL DEFAULT FALSE,
+    "deletedAt"   TIMESTAMP,
+    "createdAt"   TIMESTAMP NOT NULL DEFAULT NOW(),
+    "updatedAt"   TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS posts (
+    id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title              VARCHAR(30) NOT NULL,
+    "shortDescription" VARCHAR(100) NOT NULL,
+    content            VARCHAR(1000) NOT NULL,
+    "blogId"           UUID NOT NULL REFERENCES blogs(id),
+    "blogName"         VARCHAR(15) NOT NULL,
+    "likesCount"       INTEGER NOT NULL DEFAULT 0,
+    "dislikesCount"    INTEGER NOT NULL DEFAULT 0,
+    "deletedAt"        TIMESTAMP,
+    "createdAt"        TIMESTAMP NOT NULL DEFAULT NOW(),
+    "updatedAt"        TIMESTAMP NOT NULL DEFAULT NOW()
+);

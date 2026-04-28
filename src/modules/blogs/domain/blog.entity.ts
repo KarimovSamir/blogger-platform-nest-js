@@ -1,35 +1,22 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Model } from 'mongoose';
-
-@Schema({ timestamps: true })
 export class Blog {
-    @Prop({ type: String, required: true })
+    id: string;
     name: string;
-
-    @Prop({ type: String, required: true })
     description: string;
-
-    @Prop({ type: String, required: true })
     websiteUrl: string;
-
-    @Prop({ type: Date, nullable: true, default: null })
     deletedAt: Date | null;
-
-    @Prop({ type: Boolean, required: false, default: false })
+    createdAt: string;
     isMembership: boolean;
-
-    createdAt: Date;
 
     static createInstance(
         name: string,
         description: string,
         websiteUrl: string,
-    ): BlogDocument {
-        const blog = new this();
+    ): Blog {
+        const blog = new Blog();
         blog.name = name;
         blog.description = description;
         blog.websiteUrl = websiteUrl;
-        return blog as BlogDocument;
+        return blog;
     }
 
     update(dto: { name: string; description: string; websiteUrl: string }) {
@@ -45,10 +32,3 @@ export class Blog {
         this.deletedAt = new Date();
     }
 }
-
-export const BlogSсhema = SchemaFactory.createForClass(Blog);
-// это магия Mongoose, которая делает методы класса доступными и как статические (для createInstance), и как instance-методы (для updateActivity). Без этой строчки фабричный метод не будет работать через модель.
-BlogSсhema.loadClass(Blog);
-
-export type BlogDocument = HydratedDocument<Blog>;
-export type BlogModelType = Model<BlogDocument> & typeof Blog;

@@ -1,6 +1,4 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Blog, BlogSсhema } from './domain/blog.entity';
 import { BlogsController } from './api/blogs.controller';
 import { BlogsRepository } from './infrastructure/blogs.repository';
 import { BlogsQueryRepository } from './infrastructure/query/blogs.query-repository';
@@ -14,8 +12,6 @@ const useCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 @Module({
     // Какие другие модули нужны этому модулю (blogs) для работы
     imports: [
-        // Динамически создаем мини-модуль, который регистрирует нашу схему в базе
-        MongooseModule.forFeature([{ name: Blog.name, schema: BlogSсhema }]),
         // Из этого модуля можно экспортировать то, что указано в
         forwardRef(() => PostsModule),
     ],

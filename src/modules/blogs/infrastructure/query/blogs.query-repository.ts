@@ -1,51 +1,77 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Blog } from '../../domain/blog.entity';
-import type { BlogModelType } from '../../domain/blog.entity';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { BlogViewDto } from '../../api/view-dto/blog.view-dto';
 import { BlogQueryDto } from '../../api/input-dto/get-blogs-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 
-@Injectable() // Делаем класс доступным для внедрения в контроллер
+@Injectable()
 export class BlogsQueryRepository {
-    constructor(@InjectModel(Blog.name) private blogModel: BlogModelType) {}
+    constructor(@InjectDataSource() private dataSource: DataSource) {}
 
     // Метод ищет blog и сразу возвращает отформатированный ViewDto
     async getByIdOrNotFoundFail(id: string): Promise<BlogViewDto> {
-        const blog = await this.blogModel.findOne({
-            _id: id,
-            deletedAt: null, // Игнорируем удаленных
-        });
+        const result = await this.dataSource.query(
+            `SELECT * FROM blogs WHERE id = $1 AND "deletedAt" IS NULL`,
+            [id],
+        );
 
-        if (!blog) {
+        if (!result[0]) {
             throw new NotFoundException('Blog not found!');
         }
 
-        return BlogViewDto.mapToView(blog);
+        return BlogViewDto.mapToView(result[0]);
     }
 
-    // Новый метод для получения списка
-    async getAll(
-        query: BlogQueryDto,
-    ): Promise<PaginatedViewDto<BlogViewDto[]>> {
-        const filter: Record<string, any> = {
-            deletedAt: null,
-        };
+    // Метод для получения списка с пагинацией, поиском и сортировкой
+    async getAll(query: BlogQueryDto): Promise<PaginatedViewDto<BlogViewDto[]>> {
+        // Собираем условия фильтрации динамически.
+        // В Mongoose это был объект filter с $regex, здесь — массив WHERE-условий и параметров.
+        const conditions: string[] = ['"deletedAt" IS NULL'];
+        const params: any[] = [];
 
         if (query.searchNameTerm) {
-            filter.name = { $regex: query.searchNameTerm, $options: 'i' };
+            params.push(`%${query.searchNameTerm}%`);
+            // ILIKE — это PostgreSQL-аналог { $regex: ..., $options: 'i' } (регистронезависимый поиск)
+            conditions.push(`name ILIKE $${params.length}`);
         }
 
-        const blogs = await this.blogModel
-            .find(filter)
-            .sort({ [query.sortBy as string]: query.sortDirection })
-            .skip(query.calculateSkip())
-            .limit(query.pageSize);
+        const whereClause = conditions.join(' AND ');
 
-        const totalCount = await this.blogModel.countDocuments(filter);
+        // Белый список колонок для сортировки — защита от SQL-инъекций через sortBy
+        const allowedSortFields: Record<string, string> = {
+            name: 'name',
+            description: 'description',
+            websiteUrl: '"websiteUrl"',
+            isMembership: '"isMembership"',
+            createdAt: '"createdAt"',
+        };
+        const sortColumn = allowedSortFields[query.sortBy as string] ?? '"createdAt"';
+        const sortDir = query.sortDirection === 'asc' ? 'ASC' : 'DESC';
 
-        // const items = blogs.map(BlogViewDto.mapToView);
-        const items = blogs.map((blog) => BlogViewDto.mapToView(blog));
+        // Добавляем LIMIT и OFFSET в конец массива параметров
+        params.push(query.pageSize);
+        const limitIndex = params.length;
+
+        params.push(query.calculateSkip());
+        const offsetIndex = params.length;
+
+        const blogs = await this.dataSource.query(
+            `SELECT * FROM blogs
+             WHERE ${whereClause}
+             ORDER BY ${sortColumn} ${sortDir}
+             LIMIT $${limitIndex} OFFSET $${offsetIndex}`,
+            params,
+        );
+
+        // Для totalCount используем те же условия, но без LIMIT/OFFSET
+        const countResult = await this.dataSource.query(
+            `SELECT COUNT(*)::int AS count FROM blogs WHERE ${whereClause}`,
+            params.slice(0, params.length - 2),
+        );
+        const totalCount = countResult[0].count;
+
+        const items = blogs.map(BlogViewDto.mapToView);
 
         return PaginatedViewDto.mapToView({
             items,
