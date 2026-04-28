@@ -4,10 +4,14 @@ import { DataSource } from 'typeorm';
 import { PostViewDto } from '../../api/view-dto/post.view-dto';
 import { PostQueryDto } from '../../api/input-dto/get-posts-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
+import { LikesRepository } from '../../../likes/infrastructure/likes.repository';
 
 @Injectable()
 export class PostsQueryRepository {
-    constructor(@InjectDataSource() private dataSource: DataSource) {}
+    constructor(
+        @InjectDataSource() private dataSource: DataSource,
+        private likesRepository: LikesRepository,
+    ) {}
 
     async getByIdOrNotFoundFail(id: string, userId?: string): Promise<PostViewDto> {
         const result = await this.dataSource.query(
@@ -19,14 +23,16 @@ export class PostsQueryRepository {
             throw new NotFoundException('Post not found');
         }
 
-        // По заданию домашки лайки игнорируем — myStatus всегда 'None', newestLikes всегда []
-        return PostViewDto.mapToView(result[0], 'None', []);
+        const myStatus = await this.resolveMyStatus(id, userId);
+        const newestLikes = await this.resolveNewestLikes(id);
+        return PostViewDto.mapToView(result[0], myStatus, newestLikes);
     }
 
     async getAll(
-        query: PostQueryDto, userId?: string
+        query: PostQueryDto,
+        userId?: string,
     ): Promise<PaginatedViewDto<PostViewDto[]>> {
-        return this.runPaginatedQuery(query, ['"deletedAt" IS NULL'], []);
+        return this.runPaginatedQuery(query, ['"deletedAt" IS NULL'], [], userId);
     }
 
     async getAllByBlogId(
@@ -34,20 +40,23 @@ export class PostsQueryRepository {
         query: PostQueryDto,
         userId?: string,
     ): Promise<PaginatedViewDto<PostViewDto[]>> {
-        // Фильтруем по blogId плюс не отдаём удалённые посты
-        return this.runPaginatedQuery(query, ['"blogId" = $1', '"deletedAt" IS NULL'], [blogId]);
+        return this.runPaginatedQuery(
+            query,
+            ['"blogId" = $1', '"deletedAt" IS NULL'],
+            [blogId],
+            userId,
+        );
     }
 
-    // Общая логика пагинации, чтобы не дублировать в getAll и getAllByBlogId
     private async runPaginatedQuery(
         query: PostQueryDto,
         baseConditions: string[],
         baseParams: any[],
+        userId?: string,
     ): Promise<PaginatedViewDto<PostViewDto[]>> {
         const params: any[] = [...baseParams];
         const whereClause = baseConditions.join(' AND ');
 
-        // Белый список колонок для сортировки — защита от SQL-инъекций через sortBy
         const allowedSortFields: Record<string, string> = {
             title: 'title',
             shortDescription: '"shortDescription"',
@@ -59,7 +68,6 @@ export class PostsQueryRepository {
         const sortColumn = allowedSortFields[query.sortBy as string] ?? '"createdAt"';
         const sortDir = query.sortDirection === 'asc' ? 'ASC' : 'DESC';
 
-        // Добавляем LIMIT и OFFSET в конец массива параметров
         params.push(query.pageSize);
         const limitIndex = params.length;
 
@@ -74,15 +82,19 @@ export class PostsQueryRepository {
             params,
         );
 
-        // Для totalCount используем те же условия, но без LIMIT/OFFSET
         const countResult = await this.dataSource.query(
             `SELECT COUNT(*)::int AS count FROM posts WHERE ${whereClause}`,
             params.slice(0, params.length - 2),
         );
         const totalCount = countResult[0].count;
 
-        // По заданию лайки игнорируем — везде myStatus='None', newestLikes=[]
-        const items = posts.map((post: any) => PostViewDto.mapToView(post, 'None', []));
+        const items = await Promise.all(
+            posts.map(async (post: any) => {
+                const myStatus = await this.resolveMyStatus(post.id, userId);
+                const newestLikes = await this.resolveNewestLikes(post.id);
+                return PostViewDto.mapToView(post, myStatus, newestLikes);
+            }),
+        );
 
         return PaginatedViewDto.mapToView({
             items,
@@ -90,5 +102,22 @@ export class PostsQueryRepository {
             page: query.pageNumber,
             size: query.pageSize,
         });
+    }
+
+    private async resolveMyStatus(postId: string, userId?: string): Promise<string> {
+        if (!userId) return 'None';
+        const like = await this.likesRepository.findByUserAndParentId(userId, postId);
+        return like ? like.status : 'None';
+    }
+
+    private async resolveNewestLikes(
+        postId: string,
+    ): Promise<Array<{ addedAt: string; userId: string; login: string }>> {
+        const likes = await this.likesRepository.findNewestLikesByParentId(postId, 3);
+        return likes.map((like) => ({
+            addedAt: like.createdAt,
+            userId: like.userId,
+            login: like.login,
+        }));
     }
 }

@@ -50,6 +50,19 @@ CREATE TABLE IF NOT EXISTS posts (
     "updatedAt"        TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS comments (
+    id                            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    content                       VARCHAR(300) NOT NULL,
+    "postId"                      UUID NOT NULL REFERENCES posts(id),
+    "commentatorInfo_userId"      UUID NOT NULL,
+    "commentatorInfo_userLogin"   VARCHAR(10) NOT NULL,
+    "likesCount"                  INTEGER NOT NULL DEFAULT 0,
+    "dislikesCount"               INTEGER NOT NULL DEFAULT 0,
+    "deletedAt"                   TIMESTAMP,
+    "createdAt"                   TIMESTAMP NOT NULL DEFAULT NOW(),
+    "updatedAt"                   TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
 -- parentId — это либо postId, либо commentId. Единый FK сделать нельзя,
 -- потому что ссылка может вести в разные таблицы. Чистим лайки руками
 -- при удалении родителя и в TRUNCATE в testing.controller.ts.

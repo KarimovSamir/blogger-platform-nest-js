@@ -1,5 +1,3 @@
-import { CommentDocument } from "../../domain/comment.entity";
-
 export class CommentViewDto {
     id: string;
     content: string;
@@ -14,21 +12,28 @@ export class CommentViewDto {
         myStatus: string;
     };
 
-    static mapToView(comment: CommentDocument, myStatus: string = 'None'): CommentViewDto {
-        return {
-            id: comment._id.toString(),
-            content: comment.content,
-            commentatorInfo: {
-                userId: comment.commentatorInfo.userId,
-                userLogin: comment.commentatorInfo.userLogin,
-            },
-            createdAt: comment.createdAt.toISOString(),
-            likesInfo: {
-                likesCount: comment.likesInfo.likesCount,
-                dislikesCount: comment.likesInfo.dislikesCount,
-                myStatus,
-            },
+    // Принимает либо row из БД (плоский), либо объект Comment (с вложенным commentatorInfo)
+    static mapToView(comment: any, myStatus: string = 'None'): CommentViewDto {
+        const dto = new CommentViewDto();
+        dto.id = comment.id;
+        dto.content = comment.content;
+        dto.commentatorInfo = comment.commentatorInfo
+            ? {
+                  userId: comment.commentatorInfo.userId,
+                  userLogin: comment.commentatorInfo.userLogin,
+              }
+            : {
+                  userId: comment.commentatorInfo_userId,
+                  userLogin: comment.commentatorInfo_userLogin,
+              };
+        dto.createdAt = comment.createdAt instanceof Date
+            ? comment.createdAt.toISOString()
+            : comment.createdAt;
+        dto.likesInfo = {
+            likesCount: comment.likesInfo?.likesCount ?? comment.likesCount ?? 0,
+            dislikesCount: comment.likesInfo?.dislikesCount ?? comment.dislikesCount ?? 0,
+            myStatus,
         };
+        return dto;
     }
-
 }

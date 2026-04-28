@@ -1,10 +1,7 @@
-import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
-import { InjectModel } from "@nestjs/mongoose";
-import { CommentsRepository } from "../../infrastructure/comments.repository";
-import { Comment } from "../../domain/comment.entity";
-import type { CommentModelType } from "../../domain/comment.entity";
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommentsRepository } from '../../infrastructure/comments.repository';
+import { Comment } from '../../domain/comment.entity';
 
-// 1. Упаковываем аргументы в класс-команду
 export class CreateCommentCommand {
     constructor(
         public content: string,
@@ -14,22 +11,15 @@ export class CreateCommentCommand {
     ) {}
 }
 
-// 2. Указываем, какую команду обрабатывает этот класс
 @CommandHandler(CreateCommentCommand)
 export class CreateCommentUseCase implements ICommandHandler<CreateCommentCommand, string> {
-    
-    // 3. Инжектим только те зависимости, которые нужны для создания
-    constructor(
-        private commentsRepository: CommentsRepository,
-        @InjectModel(Comment.name) private commentModel: CommentModelType,
-    ) {}
+    constructor(private commentsRepository: CommentsRepository) {}
 
-    // 4. Метод execute, внутри которого старая логика
     async execute(command: CreateCommentCommand): Promise<string> {
-        // Достаем данные из команды для удобства
         const { content, userId, userLogin, postId } = command;
-        const comment = this.commentModel.createInstance(content, { userId, userLogin }, postId); 
-        await this.commentsRepository.save(comment);
-        return comment._id.toString();
+        const comment = Comment.createInstance(content, { userId, userLogin }, postId);
+        // save() возвращает Comment с проставленным сгенерированным UUID
+        const saved = await this.commentsRepository.save(comment);
+        return saved.id;
     }
 }
