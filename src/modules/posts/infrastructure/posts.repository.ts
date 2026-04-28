@@ -74,6 +74,8 @@ export class PostsRepository {
                     post.id,
                 ],
             );
+            console.log('UPDATE result type:', JSON.stringify(result));
+
             return mapRowToPost(result[0]);
         }
     }

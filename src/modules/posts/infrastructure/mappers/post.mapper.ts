@@ -16,6 +16,7 @@ export function mapRowToPost(row: any): Post {
     };
     post.deletedAt = row.deletedAt;
     // PostgreSQL возвращает TIMESTAMP как Date-объект, приводим к ISO-строке
-    post.createdAt = new Date(row.createdAt).toISOString();
+    //  если реально нет данных, выдаст пустую строку вместо краша
+    post.createdAt = row.createdAt ? new Date(row.createdAt).toISOString() : '';
     return post;
 }
