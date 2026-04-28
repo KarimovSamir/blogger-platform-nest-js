@@ -26,7 +26,7 @@ export class TestingController {
         // Очищаем PostgreSQL таблицы
         // TRUNCATE быстрее чем DELETE, и CASCADE чтобы учесть foreign keys если появятся
         // CASCADE нужен из-за foreign key между posts и blogs
-        await this.dataSource.query(`TRUNCATE TABLE users, devices, posts, blogs CASCADE`);
+        await this.dataSource.query(`TRUNCATE TABLE users, devices, posts, blogs, likes CASCADE`);
 
     }
 }

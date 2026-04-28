@@ -49,3 +49,20 @@ CREATE TABLE IF NOT EXISTS posts (
     "createdAt"        TIMESTAMP NOT NULL DEFAULT NOW(),
     "updatedAt"        TIMESTAMP NOT NULL DEFAULT NOW()
 );
+
+-- parentId — это либо postId, либо commentId. Единый FK сделать нельзя,
+-- потому что ссылка может вести в разные таблицы. Чистим лайки руками
+-- при удалении родителя и в TRUNCATE в testing.controller.ts.
+CREATE TABLE IF NOT EXISTS likes (
+    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    "parentId"   UUID NOT NULL,
+    "userId"     UUID NOT NULL,
+    login        VARCHAR(10) NOT NULL,
+    status       VARCHAR(10) NOT NULL,
+    "createdAt"  TIMESTAMP NOT NULL DEFAULT NOW(),
+    "updatedAt"  TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT likes_user_parent_unique UNIQUE ("userId", "parentId")
+);
+
+CREATE INDEX IF NOT EXISTS likes_parent_status_idx
+    ON likes ("parentId", status);
