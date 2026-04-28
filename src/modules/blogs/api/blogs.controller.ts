@@ -20,7 +20,7 @@ import { JwtOptionalAuthGuard } from "../../auth/guards/jwt/jwt-optional-auth.gu
 // @Body() вытаскивает тело POST-запроса (req.body)
 // @Param() вытаскивает часть пути URL (например, :id из /blogs/123)
 
-@Controller('blogs')
+@Controller('sa/blogs')
 export class BlogsController {
     constructor(
         private readonly commandBus: CommandBus,
