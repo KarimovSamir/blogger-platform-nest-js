@@ -1,59 +1,32 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Post } from '../../domain/post.entity';
-import type { PostModelType } from '../../domain/post.entity';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { PostViewDto } from '../../api/view-dto/post.view-dto';
 import { PostQueryDto } from '../../api/input-dto/get-posts-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
-import { LikesRepository } from '../../../likes/infrastructure/likes.repository';
 
 @Injectable()
 export class PostsQueryRepository {
-    constructor(
-        @InjectModel(Post.name) private postModel: PostModelType,
-        private likesRepository: LikesRepository,
-    ) { }
+    constructor(@InjectDataSource() private dataSource: DataSource) {}
 
     async getByIdOrNotFoundFail(id: string, userId?: string): Promise<PostViewDto> {
-        const post = await this.postModel.findOne({
-            _id: id,
-            deletedAt: null,
-        });
+        const result = await this.dataSource.query(
+            `SELECT * FROM posts WHERE id = $1 AND "deletedAt" IS NULL`,
+            [id],
+        );
 
-        if (!post) {
+        if (!result[0]) {
             throw new NotFoundException('Post not found');
         }
 
-        const { myStatus, newestLikes } = await this.buildLikeData(id, userId);
-
-        return PostViewDto.mapToView(post, myStatus, newestLikes);
+        // По заданию домашки лайки игнорируем — myStatus всегда 'None', newestLikes всегда []
+        return PostViewDto.mapToView(result[0], 'None', []);
     }
 
     async getAll(
         query: PostQueryDto, userId?: string
     ): Promise<PaginatedViewDto<PostViewDto[]>> {
-        const filter = { deletedAt: null };
-
-        const posts = await this.postModel
-            .find(filter)
-            .sort({ [query.sortBy]: query.sortDirection })
-            .skip(query.calculateSkip())
-            .limit(query.pageSize);
-
-        const totalCount = await this.postModel.countDocuments(filter);
-        const items = await Promise.all(
-            posts.map(async (post) => {
-                const { myStatus, newestLikes } = await this.buildLikeData(post._id.toString(), userId);
-                return PostViewDto.mapToView(post, myStatus, newestLikes);
-            })
-        );
-
-        return PaginatedViewDto.mapToView({
-            items,
-            totalCount,
-            page: query.pageNumber,
-            size: query.pageSize,
-        });
+        return this.runPaginatedQuery(query, ['"deletedAt" IS NULL'], []);
     }
 
     async getAllByBlogId(
@@ -61,23 +34,56 @@ export class PostsQueryRepository {
         query: PostQueryDto,
         userId?: string,
     ): Promise<PaginatedViewDto<PostViewDto[]>> {
-        // Добавляем deletedAt: null, чтобы не отдать удаленные посты
-        const filter = { blogId: blogId, deletedAt: null };
+        // Фильтруем по blogId плюс не отдаём удалённые посты
+        return this.runPaginatedQuery(query, ['"blogId" = $1', '"deletedAt" IS NULL'], [blogId]);
+    }
 
-        const posts = await this.postModel
-            .find(filter)
-            .sort({ [query.sortBy]: query.sortDirection })
-            .skip(query.calculateSkip())
-            .limit(query.pageSize);
+    // Общая логика пагинации, чтобы не дублировать в getAll и getAllByBlogId
+    private async runPaginatedQuery(
+        query: PostQueryDto,
+        baseConditions: string[],
+        baseParams: any[],
+    ): Promise<PaginatedViewDto<PostViewDto[]>> {
+        const params: any[] = [...baseParams];
+        const whereClause = baseConditions.join(' AND ');
 
-        const totalCount = await this.postModel.countDocuments(filter);
-        const items = await Promise.all(
-            posts.map(async (post) => {
-                const { myStatus, newestLikes } = await this.buildLikeData(post._id.toString(), userId);
-                return PostViewDto.mapToView(post, myStatus, newestLikes);
-            })
+        // Белый список колонок для сортировки — защита от SQL-инъекций через sortBy
+        const allowedSortFields: Record<string, string> = {
+            title: 'title',
+            shortDescription: '"shortDescription"',
+            content: 'content',
+            blogId: '"blogId"',
+            blogName: '"blogName"',
+            createdAt: '"createdAt"',
+        };
+        const sortColumn = allowedSortFields[query.sortBy as string] ?? '"createdAt"';
+        const sortDir = query.sortDirection === 'asc' ? 'ASC' : 'DESC';
+
+        // Добавляем LIMIT и OFFSET в конец массива параметров
+        params.push(query.pageSize);
+        const limitIndex = params.length;
+
+        params.push(query.calculateSkip());
+        const offsetIndex = params.length;
+
+        const posts = await this.dataSource.query(
+            `SELECT * FROM posts
+             WHERE ${whereClause}
+             ORDER BY ${sortColumn} ${sortDir}
+             LIMIT $${limitIndex} OFFSET $${offsetIndex}`,
+            params,
         );
-        
+
+        // Для totalCount используем те же условия, но без LIMIT/OFFSET
+        const countResult = await this.dataSource.query(
+            `SELECT COUNT(*)::int AS count FROM posts WHERE ${whereClause}`,
+            params.slice(0, params.length - 2),
+        );
+        const totalCount = countResult[0].count;
+
+        // По заданию лайки игнорируем — везде myStatus='None', newestLikes=[]
+        const items = posts.map((post: any) => PostViewDto.mapToView(post, 'None', []));
+
         return PaginatedViewDto.mapToView({
             items,
             totalCount,
@@ -85,21 +91,4 @@ export class PostsQueryRepository {
             size: query.pageSize,
         });
     }
-
-    private async buildLikeData(postId: string, userId?: string) {
-        const newest = await this.likesRepository.findNewestLikesByParentId(postId, 3);
-        const newestLikes = newest.map(l => ({
-            addedAt: l.createdAt.toISOString(),
-            userId: l.userId,
-            login: l.login,
-        }));
-
-        let myStatus = 'None';
-        if (userId) {
-            const userLike = await this.likesRepository.findByUserAndParentId(userId, postId);
-            if (userLike) myStatus = userLike.status;
-        }
-        return { myStatus, newestLikes };
-    }
-
 }

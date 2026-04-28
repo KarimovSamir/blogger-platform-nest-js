@@ -1,7 +1,5 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Post, PostSchema } from './domain/post.entity';
 import { PostsController } from './api/posts.controller';
 import { PostsRepository } from './infrastructure/posts.repository';
 import { PostsQueryRepository } from './infrastructure/query/posts.query-repository';
@@ -24,7 +22,6 @@ const useCases = [
 
 @Module({
     imports: [
-        MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
         CqrsModule,
         forwardRef(() => BlogsModule),
         forwardRef(() => CommentsModule),

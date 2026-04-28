@@ -1,40 +1,20 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Model } from 'mongoose';
-
-@Schema({ _id: false })
+// Структура счётчиков лайков, которая хранится внутри Post
 class PostLikesInfo {
-    @Prop({ type: Number, default: 0 })
     likesCount: number;
-
-    @Prop({ type: Number, default: 0 })
     dislikesCount: number;
 }
 
-@Schema({ timestamps: true })
 export class Post {
-    @Prop({ type: String, required: true })
+    id: string;
     title: string;
-
-    @Prop({ type: String, required: true })
     shortDescription: string;
-
-    @Prop({ type: String, required: true })
     content: string;
-
-    @Prop({ type: String, required: true })
     blogId: string;
-
-    @Prop({ type: String, required: true })
     blogName: string;
-
-    @Prop({ type: Date, nullable: true, default: null })
     deletedAt: Date | null;
-
     // хранение счетчиков лайков в базу
-    @Prop({ type: PostLikesInfo, default: () => ({ likesCount: 0, dislikesCount: 0 }) })
     likesInfo: PostLikesInfo;
-
-    createdAt: Date;
+    createdAt: string;
 
     static createInstance(
         title: string,
@@ -42,15 +22,16 @@ export class Post {
         content: string,
         blogId: string,
         blogName: string,
-    ): PostDocument {
-        const post = new this();
+    ): Post {
+        const post = new Post();
         post.title = title;
         post.shortDescription = shortDescription;
         post.content = content;
         post.blogId = blogId;
         post.blogName = blogName;
         post.likesInfo = { likesCount: 0, dislikesCount: 0 };
-        return post as PostDocument;
+        post.deletedAt = null;
+        return post;
     }
 
     // обновления счетчиков, вызывается из UseCase
@@ -78,9 +59,3 @@ export class Post {
         this.deletedAt = new Date();
     }
 }
-
-export const PostSchema = SchemaFactory.createForClass(Post);
-PostSchema.loadClass(Post);
-
-export type PostDocument = HydratedDocument<Post>;
-export type PostModelType = Model<PostDocument> & typeof Post;
