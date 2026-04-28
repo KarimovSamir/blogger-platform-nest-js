@@ -78,6 +78,7 @@ export class BlogsSAController {
         await this.commandBus.execute(new UpdateBlogCommand(id, updateBlogDto));
     }
 
+    @UseGuards(BasicAuthGuard)
     @Put(':blogId/posts/:postId')
     @HttpCode(HttpStatus.NO_CONTENT)
     async updatePostForBlog(
@@ -85,9 +86,10 @@ export class BlogsSAController {
         @Param('postId') postId: string,
         @Body() dto: CreatePostForBlogDto,
     ) {
+        // Проверяем что blog существует — иначе 404
+        await this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
         await this.commandBus.execute(new UpdatePostCommand(postId, { ...dto, blogId }));
     }
-
 
     @UseGuards(BasicAuthGuard)
     @Delete(':id')
@@ -103,6 +105,8 @@ export class BlogsSAController {
         @Param('blogId') blogId: string,
         @Param('postId') postId: string,
     ) {
+        // Проверяем что blog существует — иначе 404
+        await this.blogsQueryRepository.getByIdOrNotFoundFail(blogId);
         await this.commandBus.execute(new DeletePostCommand(postId));
     }
 }
